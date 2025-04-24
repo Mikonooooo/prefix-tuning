@@ -33,4 +33,3 @@ if __name__ == "__main__":
     config_path = Path("code") / "configs" / "prefix_tuning.yaml"
     model = GPT2LMHeadModel.from_pretrained("gpt2", config=GPT2Config())
     prefix_tuning = PrefixTuning(config_path, model)
-    # print(prefix_tuning)
