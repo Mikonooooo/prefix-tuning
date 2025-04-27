@@ -19,31 +19,36 @@ def get_dict_from_data(filepath:str, tokenizer: GPT2Tokenizer) -> list[str]:
     return input_output_dict
 
 class e2eDataset(Dataset):
-    def __init__(self, filepath, tokenizer, max_length=256):
+    def __init__(self, filepath, tokenizer):
         self.tokenizer = tokenizer
         self.examples = []
-        self.max_length = max_length
 
         with open(filepath, "r") as f:
             for i, line in enumerate(f):
                 line = line.strip()
                 table, text = line.split("||")
-                table = ' {} {}'.format(table, tokenizer.bos_token)
-                text = ' {} {}'.format(text, tokenizer.eos_token)   
-                self.examples.append((table, text))
+                example = ' {} {} {} {}'.format(table, tokenizer.bos_token, text, tokenizer.eos_token)
+                # text = ' {} {}'.format(text, tokenizer.eos_token)   
+                self.examples.append(example)
 
     def __len__(self):
         return len(self.examples)
 
     def __getitem__(self, index):
-        table, text = self.examples[index]
-        tokenized_table = self.tokenizer(table, truncation=True)
-        tokenized_text = self.tokenizer(text, truncation=True)
+        # table, text = self.examples[index]
+        # tokenized_table = self.tokenizer(table, truncation=True)
+        # tokenized_text = self.tokenizer(text, truncation=True)
+        tokenized = self.tokenizer(self.examples[index], truncation=True)
+
+        # mask out table in labels
+        sep_idx = tokenized["input_ids"].index(self.tokenizer.bos_token_id)
+        labels = tokenized["input_ids"].copy()
+        labels[:sep_idx] = [-100]*sep_idx
 
         return {
-            "input_ids": tokenized_table["input_ids"],
-            "attention_mask": tokenized_table["attention_mask"],
-            "labels": tokenized_text["input_ids"]
+            "input_ids": tokenized["input_ids"],
+            "attention_mask": tokenized["attention_mask"],
+            "labels": labels
         }
     
 def collate_fn(batch, pad_token_id):
@@ -61,18 +66,27 @@ def collate_fn(batch, pad_token_id):
         "labels": labels_padded
     }
 
+def make_dataloaders(files, tokenizer, batch_size):
+    datasets = {}
+    for name, filepath in files.items():
+        dataset = e2eDataset(filepath, tokenizer)
+        dataloader = DataLoader(dataset, batch_size, shuffle=True, collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+        datasets[name] = dataloader
+    return datasets
 
 
 if __name__ == "__main__":
     filepath = "data/e2e_data/src1_test.txt"
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
     tokenizer.pad_token = tokenizer.eos_token
     # get_dict_from_data(filepath, tokenizer)
     dataset = e2eDataset(filepath, tokenizer)
     print(dataset.__getitem__(0))
 
-    dataloader = DataLoader(dataset, batch_size=64, shuffle=False, collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
-    for b in dataloader:
-        print(b)
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=False, collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+    for batch in dataloader:
+        print(batch)
         break
+
 

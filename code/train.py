@@ -1,8 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
-from data_gen import e2eDataset
-from transformers import GPT2Tokenizer  
-from transformers.data.data_collator import DataCollatorWithPadding
+from data_gen import make_dataloaders
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
 
 def train(model, optimizer, criterion, dataloader, epochs=10):
@@ -21,12 +20,15 @@ def train(model, optimizer, criterion, dataloader, epochs=10):
 
 
 if __name__ == "__main__":
-    filepath = "data/e2e_data/src1_test.txt"
+    files = {"small": "data/e2e_data/small_data.txt"}
+    model     = GPT2LMHeadModel.from_pretrained("gpt2")
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    collator = DataCollatorWithPadding(tokenizer)
-    dataset = e2eDataset(filepath, tokenizer)
-    # print(dataset.__getitem__(0))
-    dataloader = DataLoader(dataset, batch_size=3, collate_fn=collator)
-    for batch in dataloader:
-        print(batch)
+    tokenizer.pad_token = tokenizer.eos_token
+    dataloaders = make_dataloaders(files, tokenizer, batch_size=1)
+
+    small_dataloader = dataloaders["small"]
+    for inputs in small_dataloader:
+        print(inputs["input_ids"].shape)
+        outputs = model(**inputs)
+        print(outputs["logits"].shape)
         break
