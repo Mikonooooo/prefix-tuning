@@ -1,11 +1,13 @@
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
-import sys, os
+import sys
+import os
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import numpy
 
-def get_dict_from_data(filepath:str, tokenizer: GPT2Tokenizer) -> list[str]:
+
+def get_dict_from_data(filepath: str, tokenizer: GPT2Tokenizer) -> list[str]:
     input_output_dict = {}
     with open(filepath, "r") as f:
         for i, line in enumerate(f):
@@ -13,10 +15,12 @@ def get_dict_from_data(filepath:str, tokenizer: GPT2Tokenizer) -> list[str]:
             input_table, output_sent = line.split("||")
             input_table = ' {} {}'.format(input_table, tokenizer.bos_token)
             output_sent = ' {} {}'.format(output_sent, tokenizer.eos_token)
-            
+
             input_output_dict.setdefault(input_table, [])
-            input_output_dict[input_table].append(output_sent) # append all sentences that map from table data
+            # append all sentences that map from table data
+            input_output_dict[input_table].append(output_sent)
     return input_output_dict
+
 
 class e2eDataset(Dataset):
     def __init__(self, filepath, tokenizer):
@@ -27,8 +31,9 @@ class e2eDataset(Dataset):
             for i, line in enumerate(f):
                 line = line.strip()
                 table, text = line.split("||")
-                example = ' {} {} {} {}'.format(table, tokenizer.bos_token, text, tokenizer.eos_token)
-                # text = ' {} {}'.format(text, tokenizer.eos_token)   
+                example = ' {} {} {} {}'.format(
+                    table, tokenizer.bos_token, text, tokenizer.eos_token)
+                # text = ' {} {}'.format(text, tokenizer.eos_token)
                 self.examples.append(example)
 
     def __len__(self):
@@ -50,27 +55,32 @@ class e2eDataset(Dataset):
             "attention_mask": tokenized["attention_mask"],
             "labels": labels
         }
-    
+
+
 def collate_fn(batch, pad_token_id):
     input_ids = [torch.tensor(item["input_ids"]) for item in batch]
     attention_mask = [torch.tensor(item["attention_mask"]) for item in batch]
     labels = [torch.tensor(item["labels"]) for item in batch]
-    
-    input_ids_padded = pad_sequence(input_ids, batch_first=True, padding_value=pad_token_id)
-    attention_mask_padded = pad_sequence(attention_mask, batch_first=True, padding_value=0)
+
+    input_ids_padded = pad_sequence(
+        input_ids, batch_first=True, padding_value=pad_token_id)
+    attention_mask_padded = pad_sequence(
+        attention_mask, batch_first=True, padding_value=0)
     labels_padded = pad_sequence(labels, batch_first=True, padding_value=-100)
-    
+
     return {
         "input_ids": input_ids_padded,
         "attention_mask": attention_mask_padded,
         "labels": labels_padded
     }
 
+
 def make_dataloaders(files, tokenizer, batch_size):
     datasets = {}
     for name, filepath in files.items():
         dataset = e2eDataset(filepath, tokenizer)
-        dataloader = DataLoader(dataset, batch_size, shuffle=True, collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+        dataloader = DataLoader(dataset, batch_size, shuffle=True,
+                                collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
         datasets[name] = dataloader
     return datasets
 
@@ -84,9 +94,8 @@ if __name__ == "__main__":
     dataset = e2eDataset(filepath, tokenizer)
     print(dataset.__getitem__(0))
 
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False, collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
+                            collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
     for batch in dataloader:
         print(batch)
         break
-
-
