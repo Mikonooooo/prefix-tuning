@@ -78,10 +78,11 @@ def collate_fn(batch, pad_token_id):
 def make_dataloaders(files, tokenizer, batch_size):
     datasets = {}
     for name, filepath in files.items():
-        dataset = e2eDataset(filepath, tokenizer)
-        dataloader = DataLoader(dataset, batch_size, shuffle=True,
-                                collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
-        datasets[name] = dataloader
+        if filepath is not None:
+            dataset = e2eDataset(filepath, tokenizer)
+            dataloader = DataLoader(dataset, batch_size, shuffle=True,
+                                    collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+            datasets[name] = dataloader
     return datasets
 
 

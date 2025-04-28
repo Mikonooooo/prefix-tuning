@@ -6,18 +6,17 @@ from transformers import PreTrainedModel, GPT2PreTrainedModel, GPT2Tokenizer, GP
 
 
 class PrefixTuning(nn.Module):
-    def __init__(self, model: GPT2Model, p_idx: List[int] = [0, 1], k: int = 512):
+    def __init__(self, model: GPT2Model, prefix_len: int = 10, k: int = 512):
         """
         GPT-2 that overrides embeddings with prefixes
 
-        p_idx: list of position indices that will have a learned prefix
+        prefix_len: length of prefix
         k: dimension of the embedding for each entry in P' (small P)
         """
         super().__init__()
         self.gpt_model = model
         self.device = model.device
-        self.p_idx = p_idx
-        self.prefix_len = len(p_idx)
+        self.prefix_len = prefix_len
         self.hidden_dim = model.config.n_embd
         self.k = k
         self.n_layer = model.config.n_layer
@@ -32,6 +31,7 @@ class PrefixTuning(nn.Module):
             nn.Linear(self.k, self.n_layer*2*self.hidden_dim)
         )
 
+        # freeze gpt2 parameters
         for param in self.gpt_model.parameters():
             param.requires_grad = False
 
