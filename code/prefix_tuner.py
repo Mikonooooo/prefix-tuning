@@ -15,7 +15,7 @@ class PrefixTuning(nn.Module):
         """
         super().__init__()
         self.gpt_model = model
-        self.device = model.device
+        self.device = next(model.parameters()).device
         self.prefix_len = prefix_len
         self.hidden_dim = model.config.n_embd
         self.k = k
@@ -24,19 +24,19 @@ class PrefixTuning(nn.Module):
         self.head_dim = self.hidden_dim // self.n_head
 
         self.P_prime = nn.Embedding(
-            self.prefix_len, self.hidden_dim)  # small P
+            self.prefix_len, self.hidden_dim).to(self.device)  # small P
         self.P_mlp = nn.Sequential(  # real P
             nn.Linear(self.hidden_dim, self.k),
             nn.Tanh(),
             nn.Linear(self.k, self.n_layer*2*self.hidden_dim)
-        )
+        ).to(self.device)
 
         # freeze gpt2 parameters
         for param in self.gpt_model.parameters():
             param.requires_grad = False
 
     def get_prefix(self, batch_size):
-        prefix_indices = torch.arange(self.prefix_len).expand(batch_size, -1)
+        prefix_indices = torch.arange(self.prefix_len, device=self.device).expand(batch_size, -1)
         # batch_size x prefix_len x (n_layer * 2 * hidden_dim)
         prefix = self.P_mlp(self.P_prime(prefix_indices))
 
@@ -55,7 +55,7 @@ class PrefixTuning(nn.Module):
 
         prefix_key_values = self.get_prefix(batch_size)
 
-        prefix_attention_mask = torch.ones(batch_size, self.prefix_len)
+        prefix_attention_mask = torch.ones(batch_size, self.prefix_len, device=self.device)
         attention_mask = torch.cat(
             [prefix_attention_mask, attention_mask], dim=1)
 
