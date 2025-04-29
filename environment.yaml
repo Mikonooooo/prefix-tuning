@@ -6,4 +6,5 @@ dependencies:
   - transformers=4.49.0
   - pip:
       - torch==2.7.0
-      
+      - scikit-image
+      - future
