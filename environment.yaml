@@ -3,7 +3,11 @@ channels:
   - defaults
 dependencies:
   - python=3.10
+  - pip
   - transformers=4.49.0
   - pip:
       - torch==2.7.0
+      - matplotlib
+      - scikit-image
+      - future
       

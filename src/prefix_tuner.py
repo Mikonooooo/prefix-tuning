@@ -54,6 +54,17 @@ class PrefixTuning(nn.Module):
         prefix = prefix.split(2)
         prefix = tuple((tensor[0], tensor[1]) for tensor in prefix)
         return prefix
+    
+    def get_prompt_p5(self, control_code=None, gpt2=None, bsz=None):
+        input_tokens = self.input_tokens.unsqueeze(0).expand(bsz, -1).to(self.device)
+        temp_control = self.wte(input_tokens)
+        past_key_values = self.control_trans(temp_control) #bsz, seqlen, layer*emb
+        bsz, seqlen, _ = past_key_values.shape
+        past_key_values = past_key_values.view(bsz, seqlen, self.match_n_layer * 2, self.match_n_head,
+                                               self.match_n_embd)
+        past_key_values = self.dropout(past_key_values)
+        past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
+        return past_key_values
 
     def forward(self, input_ids, attention_mask=None, labels=None):
         batch_size = input_ids.shape[0]
@@ -64,7 +75,14 @@ class PrefixTuning(nn.Module):
             prefix_attention_mask = torch.ones(batch_size, self.prefix_len, device=self.device)
             attention_mask = torch.cat(
                 [prefix_attention_mask, attention_mask], dim=1)
-            print(attention_mask.shape)
+            
+            # print(attention_mask.shape)
+            # print(input_ids.shape)
+
+            tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+
+            # print("attention mask", attention_mask[5])
+            # print("decoded input_ids", tokenizer.decode(input_ids[5]))
 
         output = self.gpt_model(
             input_ids=input_ids,
@@ -72,24 +90,33 @@ class PrefixTuning(nn.Module):
             attention_mask=attention_mask,
             labels=labels
         )
-        return output
+
+        loss = output.loss               # scalar float
+        logits = output.logits           # shape [batch_size, seq_len, vocab_size]
+
+        pred_ids = torch.argmax(logits, dim=-1)  # shape: [batch_size, seq_len]
+        decoded_texts = [tokenizer.decode(ids, skip_special_tokens=True) for ids in pred_ids]
+
+        return output, decoded_texts
     
     @torch.no_grad()
-    def generate(self, input_ids, attention_mask=None, max_length=200):
+    def generate(self, input_ids, attention_mask=None, max_new_tokens=200):
         batch_size = input_ids.shape[0]
         prefix_key_values = self.get_prefix(batch_size)
         
         output = self.gpt_model.generate(
             input_ids=input_ids,
             past_key_values=prefix_key_values,
-            attention_mask=attention_mask,
-            max_length=max_length,
+            # attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
             top_k=0,
             top_p=0.8,
             temperature=1,
             do_sample=True,
+            # do_sample=False,
             num_return_sequences=1
         )
+
         return output
 
 
@@ -106,7 +133,7 @@ if __name__ == "__main__":
     # prefix_model = GPT2LMHeadModel.from_pretrained("gpt2") # test GPT
     prefix_model.eval()
 
-    filepath = "data/e2e_data/src1_test.txt"
+    filepath = "data/e2e_data/small_train.txt"
     examples = get_dict_from_data(filepath, tokenizer)
     for k, v in examples.items():
         print(k)
@@ -127,8 +154,30 @@ if __name__ == "__main__":
             # "labels": labels
         }
 
+        # use generate
         outputs = prefix_model.generate(**inputs)
+        print("use generate")
         print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+        # use forward
+        for i in range(50):
+            outputs, decoded_texts = prefix_model(**inputs)
+
+            # Get logits and last predicted token
+            logits = outputs.logits  # [batch_size, seq_len, vocab_size]
+            next_token = torch.argmax(logits[:, -1, :], dim=-1, keepdim=True)  # [batch_size, 1]
+
+            # Append next token to input_ids
+            inputs["input_ids"] = torch.cat([inputs["input_ids"], next_token], dim=1)
+
+            # Update attention mask
+            new_mask = torch.ones_like(next_token)
+            inputs["attention_mask"] = torch.cat([inputs["attention_mask"], new_mask], dim=1)
+
+            # Optionally print running generation
+        print("use forward")
+        print(tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
+
         break
     
 
