@@ -50,14 +50,15 @@ class PrefixTuning(nn.Module):
         prefix = tuple((tensor[0], tensor[1]) for tensor in prefix)
         return prefix
 
-    def forward(self, input_ids, attention_mask, labels):
+    def forward(self, input_ids, attention_mask=None, labels=None):
         batch_size = input_ids.shape[0]
 
         prefix_key_values = self.get_prefix(batch_size)
 
-        prefix_attention_mask = torch.ones(batch_size, self.prefix_len, device=self.device)
-        attention_mask = torch.cat(
-            [prefix_attention_mask, attention_mask], dim=1)
+        if attention_mask is not None:
+            prefix_attention_mask = torch.ones(batch_size, self.prefix_len, device=self.device)
+            attention_mask = torch.cat(
+                [prefix_attention_mask, attention_mask], dim=1)
 
         output = self.gpt_model(
             input_ids=input_ids,
