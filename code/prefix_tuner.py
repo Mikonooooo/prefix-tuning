@@ -72,30 +72,32 @@ if __name__ == "__main__":
     model = GPT2LMHeadModel.from_pretrained("gpt2").eval()
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     prefix_model = PrefixTuning(model)  # if you actually want to use it'
+    for k, v in prefix_model.named_parameters():
+        print(k)
 
-    s = "Hamburger"
-    # 1) Tokenize the prompt
-    inputs = tokenizer(s, return_tensors="pt")
-    generated = inputs["input_ids"]  # shape [1, L]
-    past = None
+    # s = "Hamburger"
+    # # 1) Tokenize the prompt
+    # inputs = tokenizer(s, return_tensors="pt")
+    # generated = inputs["input_ids"]  # shape [1, L]
+    # past = None
 
-    # 2) Prime the model & get initial cache
-    outputs = model(input_ids=generated, use_cache=True)
-    past = outputs.past_key_values
+    # # 2) Prime the model & get initial cache
+    # outputs = model(input_ids=generated, use_cache=True)
+    # past = outputs.past_key_values
 
-    # 3) Generate one token at a time
-    for _ in range(40):
-        # Only pass in the very last token:
-        last_token = generated[:, -1:].to(model.device)  # shape [1, 1]
-        outputs = model(input_ids=last_token,
-                        past_key_values=past,
-                        use_cache=True)
-        logits = outputs.logits[:, -1, :]
-        past = outputs.past_key_values
+    # # 3) Generate one token at a time
+    # for _ in range(40):
+    #     # Only pass in the very last token:
+    #     last_token = generated[:, -1:].to(model.device)  # shape [1, 1]
+    #     outputs = model(input_ids=last_token,
+    #                     past_key_values=past,
+    #                     use_cache=True)
+    #     logits = outputs.logits[:, -1, :]
+    #     past = outputs.past_key_values
 
-        probs = torch.softmax(logits, dim=-1)
-        next_token = torch.multinomial(probs, num_samples=1)
+    #     probs = torch.softmax(logits, dim=-1)
+    #     next_token = torch.multinomial(probs, num_samples=1)
 
-        generated = torch.cat((generated, next_token), dim=1)
+    #     generated = torch.cat((generated, next_token), dim=1)
 
-    print(tokenizer.decode(generated[0], skip_special_tokens=True))
+    # print(tokenizer.decode(generated[0], skip_special_tokens=True))
