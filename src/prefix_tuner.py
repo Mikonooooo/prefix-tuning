@@ -67,6 +67,20 @@ class PrefixTuning(nn.Module):
             labels=labels
         )
         return output
+    
+    def generate(self, input_ids, attention_mask, max_length=100):
+        batch_size = input_ids.shape[0]
+        prefix_key_values = model.get_prefix(batch_size)
+        prefix_attention_mask = torch.ones(batch_size, model.prefix_len, device=model.device)
+        full_attention_mask = torch.cat([prefix_attention_mask, attention_mask], dim=1)
+        
+        output = self.gpt_model.generate(
+            input_ids=input_ids,
+            past_key_values=prefix_key_values,
+            attention_mask=full_attention_mask,
+            max_length=max_length
+        )
+        return output
 
 
 if __name__ == "__main__":
