@@ -1,13 +1,15 @@
-tuner: "prefix" # ['fine', 'prefix']
-dataset: "full" # ['small', 'medium', 'full']
-num_epochs: 5
-batch_size: 10
-prefix_len: 5
-lr: 0.00008
-
 # tuner: "prefix" # ['fine', 'prefix']
 # dataset: "small" # ['small', 'medium', 'full']
 # num_epochs: 5
 # batch_size: 10
 # prefix_len: 5
-# lr: 0.0003
+# lr: 0.00008
+# save_model: False # [True, False]
+
+tuner: "prefix" # ['fine', 'prefix']
+dataset: "small" # ['small', 'medium', 'full']
+num_epochs: 3
+batch_size: 10
+prefix_len: 5
+lr: 0.0003
+save_model: False # [True, False]

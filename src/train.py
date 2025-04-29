@@ -13,10 +13,10 @@ import os
 DATA_PATH = "data/e2e_data/"
 
 
-def tune(tuner, dataset, num_epochs, batch_size, prefix_len, lr):
+def tune(tuner, dataset, num_epochs, batch_size, prefix_len, lr, save_model=False):
     if dataset == 'small':
         files = {"train": DATA_PATH + "small_train.txt",
-                 "val": DATA_PATH + "medium_val.txt"}
+                 "val": DATA_PATH + "small_val.txt"}
     elif dataset == 'medium':
         files = {"train": DATA_PATH + "medium_train.txt",
                  "val": DATA_PATH + "medium_val.txt"}
@@ -65,6 +65,7 @@ def train(model, optimizer, train_dataloader, val_dataloader=None, epochs=10):
 
             optimizer.zero_grad()
             loss = outputs.loss
+            print(outputs.loss)
             loss.backward()
             optimizer.step()
             scheduler.step()
@@ -111,8 +112,9 @@ if __name__ == "__main__":
     model, train_losses, val_losses = tune(**args)
     print(args)
 
-    torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
-    torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
+    if args['save_model']:
+        torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
+        torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
 
     # plt.plot(train_losses)
     # plt.xlabel("epochs")

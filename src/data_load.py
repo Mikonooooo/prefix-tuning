@@ -12,18 +12,17 @@ import random
 
 
 def get_dict_from_data(filepath: str, tokenizer: GPT2Tokenizer) -> list[str]:
-    input_output_dict = {}
+    examples = {}
     with open(filepath, "r") as f:
         for i, line in enumerate(f):
             line = line.strip()
-            input_table, output_sent = line.split("||")
-            input_table = ' {} {}'.format(input_table, tokenizer.bos_token)
-            output_sent = ' {} {}'.format(output_sent, tokenizer.eos_token)
+            table, text = line.split("||")
+            table = ' {} {}'.format(table, tokenizer.bos_token)
 
-            input_output_dict.setdefault(input_table, [])
+            examples.setdefault(table, [])
             # append all sentences that map from table data
-            input_output_dict[input_table].append(output_sent)
-    return input_output_dict
+            examples[table].append(text)
+    return examples
 
 
 class e2eDataset(Dataset):
@@ -91,25 +90,42 @@ def make_dataloaders(files, tokenizer, batch_size):
 
 
 if __name__ == "__main__":
-    filepath = "data/e2e_data/src1_test.txt"
+    filepath = "data/e2e_data/src1_valid.txt"
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
+    print(tokenizer.eos_token_id)
+    print(tokenizer.eos_token)
+    print(tokenizer.pad_token_id)
     tokenizer.pad_token = tokenizer.eos_token
+    print(tokenizer.pad_token, tokenizer.pad_token_id)
+    # tokenizer.add_prefix_space = True
     # get_dict_from_data(filepath, tokenizer)
     dataset = e2eDataset(filepath, tokenizer)
-    # print(dataset.__getitem__(0))
+    x = dataset.__getitem__(0)
+    print(tokenizer.decode(x["input_ids"]))
+    print(tokenizer(" ")["input_ids"])
+    print(tokenizer.decode([1438]))
+    print(tokenizer.decode([3672]))
+    print(x["input_ids"])
+    # print(x["labels"])
 
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
-                            collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
+    # dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
+    #                         collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
     # for batch in dataloader:
     #     print(batch)
     #     break
     
     
-    # Generate small train dataset
-    base = "data/e2e_data/"
-    filepath = base + "src1_train.txt"
-    outfilepath = base + "small_train.txt"
+    # # Generate small train dataset
+    # base = "data/e2e_data/"
+    # filepath = base + "src1_train.txt"
+    # outfilepath = base + "small_train.txt"
+
+    # examples = get_dict_from_data(filepath, tokenizer)
+    # for k, v in examples.items():
+    #     print(k, v)
+    #     break
+
     
     
     

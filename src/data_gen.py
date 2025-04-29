@@ -23,6 +23,11 @@ if __name__ == "__main__":
     filepath = base + "src1_train.txt"
     outfilepath = base + "small_train.txt"
     gen_rand_subset(filepath, 100, outfilepath)
+    
+    # Generate medium valid dataset
+    filepath = base + "src1_valid.txt"
+    outfilepath = base + "small_val.txt"
+    gen_rand_subset(filepath, 100, outfilepath)
 
     # Generate medium train dataset
     filepath = base + "src1_train.txt"
