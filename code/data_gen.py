@@ -11,7 +11,6 @@ import random
 def gen_rand_subset(filepath, num_samples, outfilepath):
     with open(filepath, 'r') as f:
         lines = f.readlines()
-        print(lines[1])
     subset = random.choices(lines, k=num_samples)
     with open(outfilepath, 'w') as f:
         f.writelines(subset)

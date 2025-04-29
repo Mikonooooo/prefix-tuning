@@ -27,11 +27,13 @@ def tune(tuner, dataset, num_epochs, batch_size, prefix_len, lr):
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     if tuner == "prefix":
-        gpt_model = GPT2LMHeadModel.from_pretrained("gpt2")
-        model = PrefixTuning(gpt_model, prefix_len=prefix_len)
+        gpt_model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+        model = PrefixTuning(gpt_model, prefix_len=prefix_len).to(device)
     elif tuner == "fine":
-        model = GPT2LMHeadModel.from_pretrained("gpt2")
+        model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
 
     dataloaders = make_dataloaders(files, tokenizer, batch_size=batch_size)
     print(dataloaders)
@@ -109,7 +111,8 @@ if __name__ == "__main__":
     model, train_losses, val_losses = tune(**args)
     print(args)
 
-    torch.save(model.state_dict(), "models/e2e_prefix_tuned.pth")
+    torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
+    torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
 
     # plt.plot(train_losses)
     # plt.xlabel("epochs")

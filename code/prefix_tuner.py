@@ -15,7 +15,7 @@ class PrefixTuning(nn.Module):
         """
         super().__init__()
         self.gpt_model = model
-        self.device = model.device
+        self.device = next(model.parameters()).device
         self.prefix_len = prefix_len
         self.hidden_dim = model.config.n_embd
         self.k = k
@@ -24,19 +24,19 @@ class PrefixTuning(nn.Module):
         self.head_dim = self.hidden_dim // self.n_head
 
         self.P_prime = nn.Embedding(
-            self.prefix_len, self.hidden_dim)  # small P
+            self.prefix_len, self.hidden_dim).to(self.device)  # small P
         self.P_mlp = nn.Sequential(  # real P
             nn.Linear(self.hidden_dim, self.k),
             nn.Tanh(),
             nn.Linear(self.k, self.n_layer*2*self.hidden_dim)
-        )
+        ).to(self.device)
 
         # freeze gpt2 parameters
         for param in self.gpt_model.parameters():
             param.requires_grad = False
 
     def get_prefix(self, batch_size):
-        prefix_indices = torch.arange(self.prefix_len).expand(batch_size, -1)
+        prefix_indices = torch.arange(self.prefix_len, device=self.device).expand(batch_size, -1)
         # batch_size x prefix_len x (n_layer * 2 * hidden_dim)
         prefix = self.P_mlp(self.P_prime(prefix_indices))
 
@@ -55,7 +55,7 @@ class PrefixTuning(nn.Module):
 
         prefix_key_values = self.get_prefix(batch_size)
 
-        prefix_attention_mask = torch.ones(batch_size, self.prefix_len)
+        prefix_attention_mask = torch.ones(batch_size, self.prefix_len, device=self.device)
         attention_mask = torch.cat(
             [prefix_attention_mask, attention_mask], dim=1)
 
@@ -72,30 +72,32 @@ if __name__ == "__main__":
     model = GPT2LMHeadModel.from_pretrained("gpt2").eval()
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     prefix_model = PrefixTuning(model)  # if you actually want to use it'
+    for k, v in prefix_model.named_parameters():
+        print(k)
 
-    s = "Hamburger"
-    # 1) Tokenize the prompt
-    inputs = tokenizer(s, return_tensors="pt")
-    generated = inputs["input_ids"]  # shape [1, L]
-    past = None
+    # s = "Hamburger"
+    # # 1) Tokenize the prompt
+    # inputs = tokenizer(s, return_tensors="pt")
+    # generated = inputs["input_ids"]  # shape [1, L]
+    # past = None
 
-    # 2) Prime the model & get initial cache
-    outputs = model(input_ids=generated, use_cache=True)
-    past = outputs.past_key_values
+    # # 2) Prime the model & get initial cache
+    # outputs = model(input_ids=generated, use_cache=True)
+    # past = outputs.past_key_values
 
-    # 3) Generate one token at a time
-    for _ in range(40):
-        # Only pass in the very last token:
-        last_token = generated[:, -1:].to(model.device)  # shape [1, 1]
-        outputs = model(input_ids=last_token,
-                        past_key_values=past,
-                        use_cache=True)
-        logits = outputs.logits[:, -1, :]
-        past = outputs.past_key_values
+    # # 3) Generate one token at a time
+    # for _ in range(40):
+    #     # Only pass in the very last token:
+    #     last_token = generated[:, -1:].to(model.device)  # shape [1, 1]
+    #     outputs = model(input_ids=last_token,
+    #                     past_key_values=past,
+    #                     use_cache=True)
+    #     logits = outputs.logits[:, -1, :]
+    #     past = outputs.past_key_values
 
-        probs = torch.softmax(logits, dim=-1)
-        next_token = torch.multinomial(probs, num_samples=1)
+    #     probs = torch.softmax(logits, dim=-1)
+    #     next_token = torch.multinomial(probs, num_samples=1)
 
-        generated = torch.cat((generated, next_token), dim=1)
+    #     generated = torch.cat((generated, next_token), dim=1)
 
-    print(tokenizer.decode(generated[0], skip_special_tokens=True))
+    # print(tokenizer.decode(generated[0], skip_special_tokens=True))
