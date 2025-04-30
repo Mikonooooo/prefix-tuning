@@ -71,10 +71,13 @@ class PrefixTuning(nn.Module):
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
 
-    def forward(self, input_ids, attention_mask=None, labels=None):  # greedy
+    def forward(self, input_ids, past_key_values=None, attention_mask=None, labels=None, use_cache=False):  # greedy
         batch_size = input_ids.shape[0]
 
-        prefix_key_values = self.get_prefix(batch_size)
+        if past_key_values:
+            prefix_key_values = past_key_values
+        else:
+            prefix_key_values = self.get_prefix(batch_size)
 
         if attention_mask is not None:
             prefix_attention_mask = torch.ones(
@@ -86,67 +89,57 @@ class PrefixTuning(nn.Module):
             input_ids=input_ids,
             past_key_values=prefix_key_values,
             attention_mask=attention_mask,
-            labels=labels
+            labels=labels,
+            use_cache=use_cache
         )
 
         return output
-
+    
     @torch.no_grad()
-    def generate(self, input_ids, attention_mask=None, max_new_tokens=200, eos_token=0):
-        batch_size = input_ids.size(0)
-        device = input_ids.device
+    def generate(self, input_ids, attention_mask=None, max_new_tokens=200, eos_token=-1):
+        input_ids = generate(input_ids, self, attention_mask, max_new_tokens, eos_token)
+        return input_ids
 
-        seq_ids = input_ids
-        if attention_mask is None:
-            attention_mask = torch.ones_like(input_ids)
+@torch.no_grad()
+def generate(self, model, input_ids, attention_mask=None, max_new_tokens=200, eos_token=-1):
+    device = input_ids.device
 
-        stopped = torch.zeros(batch_size, dtype=torch.bool, device=device)
+    if attention_mask is None:
+        attention_mask = torch.ones_like(input_ids)
 
-        for _ in range(max_new_tokens):
-            outputs = self.forward(seq_ids, attention_mask=attention_mask)
-            logits = outputs.logits  # [batch_size, seq_len, vocab_size]
+    outputs = self.forward(input_ids=input_ids, use_cache=True)
+    past_key_values = outputs.past_key_values
 
-            next_token = torch.argmax(
-                logits[:, -1, :], dim=-1, keepdim=True)  # [batch_size, 1]
+    # for _ in range(max_new_tokens):
+    for _ in range(max_new_tokens):
+        last_token = input_ids[:, -1:].to(device)
+        # print("past kv", past_key_values[0, -1, -1, -1, -1])
+        # print("last token", last_token)
+        outputs = self.forward(
+            last_token,
+            attention_mask=attention_mask,
+            past_key_values=past_key_values,
+            use_cache=True
+        )
 
-            # Update stopped flags
-            for i, token in enumerate(next_token.squeeze(1)):
-                if token.item() == eos_token:
-                    stopped[i] = True
+        past_key_values = outputs.past_key_values
+        logits = outputs.logits  # [batch_size, seq_len, vocab_size]
+        next_token = torch.argmax(
+            logits[-1, :], dim=-1, keepdim=True)  # [batch_size, 1]
 
-            # Replace next_token with pad token eos for stopped sequences
-            next_token[stopped] = eos_token
+        # Update stopped flags
+        if next_token == eos_token:
+            break
 
-            # Append to sequences
-            seq_ids = torch.cat((seq_ids, next_token), dim=1)
+        # Append to sequences
+        input_ids = torch.cat((input_ids, next_token), dim=1)
 
-            # Update attention mask: 1 for new tokens, 0 if padded
-            new_mask = (~stopped).long().unsqueeze(1)
-            attention_mask = torch.cat((attention_mask, new_mask), dim=1)
+        # Update attention mask: 1 for new tokens, 0 if padded
+        new_mask = torch.tensor(
+            [1], dtype=torch.long, device=attention_mask.device).unsqueeze(1)
+        attention_mask = torch.cat((attention_mask, new_mask), dim=1)
 
-            # Stop early if all sequences are done
-            if stopped.all():
-                break
-
-        return seq_ids
-
-        # batch_size = input_ids.shape[0]
-        # prefix_key_values = self.get_prefix(batch_size)
-
-        # output = self.gpt_model.generate(
-        #     input_ids=input_ids,
-        #     past_key_values=prefix_key_values,
-        #     # attention_mask=attention_mask,
-        #     max_new_tokens=max_new_tokens,
-        #     top_k=0,
-        #     top_p=0.8,
-        #     temperature=1,
-        #     do_sample=True,
-        #     # do_sample=False,
-        #     num_return_sequences=1
-        # )
-
-        # return output
+    return input_ids
 
 
 if __name__ == "__main__":
@@ -164,16 +157,22 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
     model.eval()
 
-    filepath = "data/e2e_data/src1_test.txt"
+    filepath = "data/e2e_data/small_train.txt"
     examples = get_dict_from_data(filepath, tokenizer)
 
     for i, (k, v) in enumerate(examples.items()):
         tokenized = tokenizer(k, truncation=True, return_tensors='pt')
+        print(tokenized["input_ids"])
         output_ids = model.generate(
             tokenized["input_ids"],
             attention_mask=tokenized["attention_mask"],
             eos_token=tokenizer.eos_token_id
         )
-        print(tokenizer.decode(output_ids[0], skip_special_tokens=True))
-        if i >= 9:
-            break
+        # print(tokenizer.convert_ids_to_tokens(output_ids[0]))
+        print(output_ids)
+        start_idx = (output_ids[0] ==
+                     tokenizer.bos_token_id).nonzero().flatten()[0]
+        print(start_idx)
+        print(tokenizer.decode(
+            output_ids[0][start_idx:], skip_special_tokens=True))
+        break

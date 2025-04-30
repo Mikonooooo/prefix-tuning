@@ -1,4 +1,4 @@
-# *.pth
+*e2e_finetuned.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
