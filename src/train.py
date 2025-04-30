@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from pathlib import Path
 import yaml
+from data_load import get_dict_from_data
 import os
 
 DATA_PATH = "data/e2e_data/"
@@ -65,7 +66,6 @@ def train(model, optimizer, train_dataloader, val_dataloader=None, epochs=10):
 
             optimizer.zero_grad()
             loss = outputs.loss
-            print(outputs.loss)
             loss.backward()
             optimizer.step()
             scheduler.step()
@@ -115,6 +115,7 @@ if __name__ == "__main__":
     if args['save_model']:
         torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
         torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
+
 
     # plt.plot(train_losses)
     # plt.xlabel("epochs")
