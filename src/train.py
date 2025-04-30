@@ -116,7 +116,6 @@ if __name__ == "__main__":
         torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
         torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
 
-
     # plt.plot(train_losses)
     # plt.xlabel("epochs")
     # plt.ylabel("average loss")

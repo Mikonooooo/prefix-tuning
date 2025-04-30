@@ -12,18 +12,22 @@ For JDK
 ./e2e-metrics/measure_scores.py src/target.txt src/model-output.txt 
 ```
 
-FINE-TUNED GPT2     | Prefix-Tuned SCORES:
-==============      | ==============
-BLEU: 0.6480        | BLEU: 0.6571
-NIST: 8.3238        | NIST: 8.3984
-METEOR: 0.4431      | METEOR: 0.4439
-ROUGE_L: 0.6726     | ROUGE_L: 0.6785
-CIDEr: 2.1222       | CIDEr: 2.1928
+Cached Prefix       | Not Cached Prefix-Tuned   | Fine-tuned
+==============      | ==============            | ==============
+BLEU: 0.6480        | BLEU: 0.6571              | BLEU: 0.6721
+NIST: 8.3238        | NIST: 8.3984              | NIST: 8.5870
+METEOR: 0.4431      | METEOR: 0.4439            | METEOR: 0.4546
+ROUGE_L: 0.6726     | ROUGE_L: 0.6785           | ROUGE_L: 0.6957
+CIDEr: 2.1222       | CIDEr: 2.1928             | CIDEr: 2.2885
 
 
-
-
-
+SCORES:
+==============
+BLEU: 0.6721
+NIST: 8.5870
+METEOR: 0.4546
+ROUGE_L: 0.6957
+CIDEr: 2.2885
 
 
 

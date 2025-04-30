@@ -1,6 +1,7 @@
-from prefix_tuner import PrefixTuning, generate
+from prefix_tuner import PrefixTuning, generate, beam_search_generate
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from data_load import get_dict_from_data
+import torch
 from tqdm import tqdm
 
 
@@ -20,10 +21,18 @@ def write_model_and_target_files(input_path, model, tokenizer, generated_path, t
             # Model generation (replace with your model's inference code)
             # Example: encode table and generate
             inputs = tokenizer(table, return_tensors='pt')
-            generated_ids = model.generate(
-                input_ids=inputs['input_ids'],
+            generated_ids = generate(
+                model,
+                inputs['input_ids'],
                 attention_mask=inputs["attention_mask"],
+                max_new_tokens=200,
                 eos_token=tokenizer.eos_token_id
+            )
+            generated_ids = beam_search_generate(
+                model,
+                inputs['input_ids'],
+                max_new_tokens=200,
+                eos_token_id=tokenizer.eos_token_id
             )
             start_idx = (
                 generated_ids[0] == tokenizer.bos_token_id).nonzero().flatten()[0]
@@ -36,18 +45,27 @@ def write_model_and_target_files(input_path, model, tokenizer, generated_path, t
 
 
 if __name__ == "__main__":
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
+    input_filepath = "data/e2e_data/src1_test.txt"
+
+    # Load prefix-tuned model
+    model = GPT2LMHeadModel.from_pretrained("gpt2")
     prefix_model = PrefixTuning(model, prefix_len=5)
     prefix_model.init_P_weights(
         "models/e2e_prefix_prime.pth",
         "models/e2e_prefix_mlp.pth"
     )
-    
-    
-    gen_filepath = "src/model-output.txt"
-    label_filepath = "src/target.txt"
-    input_filepath = "data/e2e_data/src1_test.txt"
+    gen_filepath = "src/prefix-output.txt"
+    label_filepath = "src/prefix-target.txt"
     write_model_and_target_files(
         input_filepath, prefix_model, tokenizer, gen_filepath, label_filepath)
+
+    # ## Load finetuned model
+    # model = GPT2LMHeadModel.from_pretrained("gpt2")
+    # model.load_state_dict(torch.load(
+    #     "models/e2e_finetuned.pth", map_location="cpu"))  # or "cuda"
+    # gen_filepath = "src/finetuned-output.txt"
+    # label_filepath = "src/finetuned-target.txt"
+    # write_model_and_target_files(
+    #     input_filepath, model, tokenizer, gen_filepath, label_filepath)
