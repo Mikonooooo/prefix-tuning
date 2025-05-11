@@ -4,8 +4,28 @@ from data_load import get_dict_from_data
 import torch
 from tqdm import tqdm
 
+device = "cuda" 
 
-def write_model_and_target_files(input_path, model, tokenizer, generated_path, target_path):
+def write_target_file(input_path, target_path):
+    print('creating target file')
+    examples = {}
+    with open(input_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            table, text = line.split("||")
+            examples.setdefault(table, [])
+            # append all sentences that map from table data
+            examples[table].append(text)
+
+    with open(target_path, 'w') as f:
+        for texts in examples.values():
+            f.writelines(text + '\n' for text in texts)
+            f.write('\n')  # blank line between groups
+
+    print('done')
+
+
+def write_output_file(input_path, model, tokenizer, generated_path):
     """
     Processes a data file with lines of the form:
     table || target_sentence
@@ -16,21 +36,21 @@ def write_model_and_target_files(input_path, model, tokenizer, generated_path, t
     table_to_targets = get_dict_from_data(input_path, tokenizer)
 
     # Generate sentences and write files
-    with open(generated_path, 'w', encoding='utf-8') as gen_f, open(target_path, 'w', encoding='utf-8') as tgt_f:
+    with open(generated_path, 'w', encoding='utf-8') as gen_f:
         for table, targets in tqdm(table_to_targets.items()):
             # Model generation (replace with your model's inference code)
             # Example: encode table and generate
             inputs = tokenizer(table, return_tensors='pt')
-            generated_ids = generate(
-                model,
-                inputs['input_ids'],
-                attention_mask=inputs["attention_mask"],
-                max_new_tokens=200,
-                eos_token=tokenizer.eos_token_id
-            )
+            # generated_ids = generate(
+            #     model.to(device),
+            #     inputs['input_ids'].to(device),
+            #     attention_mask=inputs["attention_mask"].to(device),
+            #     max_new_tokens=200,
+            #     eos_token=tokenizer.eos_token_id
+            # )
             generated_ids = beam_search_generate(
                 model,
-                inputs['input_ids'],
+                inputs['input_ids'].to(device),
                 max_new_tokens=200,
                 eos_token_id=tokenizer.eos_token_id
             )
@@ -38,34 +58,33 @@ def write_model_and_target_files(input_path, model, tokenizer, generated_path, t
                 generated_ids[0] == tokenizer.bos_token_id).nonzero().flatten()[0]
             generated_sentence = tokenizer.decode(
                 generated_ids[0][start_idx:], skip_special_tokens=True)
+            # print(generated_sentence.strip())
             gen_f.write(generated_sentence.strip() + '\n')
 
-            tgt_f.writelines(tgt.strip() + '\n' for tgt in targets)
-            tgt_f.write('\n')  # blank line between groups
+
+            
 
 
 if __name__ == "__main__":
+    device = "cuda" 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
     input_filepath = "data/e2e_data/src1_test.txt"
 
     # Load prefix-tuned model
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
-    prefix_model = PrefixTuning(model, prefix_len=5)
+    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+    prefix_model = PrefixTuning(model, prefix_len=3, k=800)
     prefix_model.init_P_weights(
-        "models/e2e_prefix_prime.pth",
-        "models/e2e_prefix_mlp.pth"
+        "models/final_preflen3_prime.pth",
+        "models/final_preflen3_mlp.pth"
     )
-    gen_filepath = "src/prefix-output.txt"
-    label_filepath = "src/prefix-target.txt"
-    write_model_and_target_files(
-        input_filepath, prefix_model, tokenizer, gen_filepath, label_filepath)
+    gen_filepath = "evals/final_preflen3.txt"
+    write_output_file(
+        input_filepath, prefix_model, tokenizer, gen_filepath)
 
-    # ## Load finetuned model
+    ## Load finetuned model
     # model = GPT2LMHeadModel.from_pretrained("gpt2")
     # model.load_state_dict(torch.load(
-    #     "models/e2e_finetuned.pth", map_location="cpu"))  # or "cuda"
-    # gen_filepath = "src/finetuned-output.txt"
-    # label_filepath = "src/finetuned-target.txt"
-    # write_model_and_target_files(
-    #     input_filepath, model, tokenizer, gen_filepath, label_filepath)
+    #     "models/gpt_5e-5_fine.pth", map_location="cuda"))  # or "cuda"
+    # gen_filepath = "evals/gpt-5e5-beam.txt"
+    # write_output_file(input_filepath, model, tokenizer, gen_filepath)

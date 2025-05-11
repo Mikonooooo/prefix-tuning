@@ -86,27 +86,27 @@ def make_dataloaders(files, tokenizer, batch_size):
 
 
 
-
-
 if __name__ == "__main__":
-    filepath = "data/e2e_data/src1_valid.txt"
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
-    print(tokenizer.eos_token_id)
-    print(tokenizer.eos_token)
-    print(tokenizer.pad_token_id)
-    tokenizer.pad_token = tokenizer.eos_token
-    print(tokenizer.pad_token, tokenizer.pad_token_id)
-    # tokenizer.add_prefix_space = True
-    # get_dict_from_data(filepath, tokenizer)
-    dataset = e2eDataset(filepath, tokenizer)
-    x = dataset.__getitem__(0)
-    print(tokenizer.decode(x["input_ids"]))
-    print(tokenizer(" ")["input_ids"])
-    print(tokenizer.decode([1438]))
-    print(tokenizer.decode([3672]))
-    print(x["input_ids"])
-    # print(x["labels"])
+    filepath = "data/e2e_data/src1_test.txt"
+    target_path = "target_file_test.txt"
+    
+    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
+    # print(tokenizer.eos_token_id)
+    # print(tokenizer.eos_token)
+    # print(tokenizer.pad_token_id)
+    # tokenizer.pad_token = tokenizer.eos_token
+    # print(tokenizer.pad_token, tokenizer.pad_token_id)
+    # # tokenizer.add_prefix_space = True
+    # # get_dict_from_data(filepath, tokenizer)
+    # dataset = e2eDataset(filepath, tokenizer)
+    # x = dataset.__getitem__(0)
+    # print(tokenizer.decode(x["input_ids"]))
+    # print(tokenizer(" ")["input_ids"])
+    # print(tokenizer.decode([1438]))
+    # print(tokenizer.decode([3672]))
+    # print(x["input_ids"])
+    # # print(x["labels"])
 
     # dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
     #                         collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))

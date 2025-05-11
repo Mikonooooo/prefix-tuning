@@ -1,15 +1,53 @@
+# run_name: "final_preflen10"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 10
+# lr: 0.00008
+# save_model: True # [True, False]
+
+# run_name: "final_preflen20"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 20
+# lr: 0.00008
+# save_model: True # [True, False]
+
+# run_name: "final_preflen1"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 1
+# lr: 0.00008
+# save_model: True # [True, False]
+
+run_name: "final_preflen3"
 tuner: "prefix" # ['fine', 'prefix']
-dataset: "full" # ['small', 'medium', 'full']
+data_filepath: "data/e2e_data/src1_train.txt"
 num_epochs: 5
 batch_size: 10
-prefix_len: 5
+prefix_len: 3
 lr: 0.00008
 save_model: True # [True, False]
 
+# run_name: "gpt_5e-5"
 # tuner: "prefix" # ['fine', 'prefix']
-# dataset: "small" # ['small', 'medium', 'full']
-# num_epochs: 3
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
 # batch_size: 10
 # prefix_len: 5
-# lr: 0.0003
+# lr: 0.00005
 # save_model: False # [True, False]
+
+# run_name: "prefix_2deep"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 5
+# lr: 0.00008
+# save_model: True # [True, False]

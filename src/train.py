@@ -14,16 +14,8 @@ import os
 DATA_PATH = "data/e2e_data/"
 
 
-def tune(tuner, dataset, num_epochs, batch_size, prefix_len, lr, save_model=False):
-    if dataset == 'small':
-        files = {"train": DATA_PATH + "small_train.txt",
-                 "val": DATA_PATH + "small_val.txt"}
-    elif dataset == 'medium':
-        files = {"train": DATA_PATH + "medium_train.txt",
-                 "val": DATA_PATH + "medium_val.txt"}
-    elif dataset == 'full':
-        files = {"train": DATA_PATH + "src1_train.txt",
-                 "val": DATA_PATH + "src1_valid.txt"}
+def tune(run_name, tuner, data_filepath, num_epochs, batch_size, prefix_len, lr, save_model=False, k = 800):
+    files = {"train": data_filepath}
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
@@ -32,19 +24,19 @@ def tune(tuner, dataset, num_epochs, batch_size, prefix_len, lr, save_model=Fals
 
     if tuner == "prefix":
         gpt_model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-        model = PrefixTuning(gpt_model, prefix_len=prefix_len).to(device)
+        model = PrefixTuning(gpt_model, k=k, prefix_len=prefix_len).to(device)
     elif tuner == "fine":
         model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
 
     dataloaders = make_dataloaders(files, tokenizer, batch_size=batch_size)
     print(dataloaders)
     train_dataloader = dataloaders["train"]
-    val_dataloader = dataloaders["val"] if "val" in dataloaders.keys(
-    ) else None
+    # val_dataloader = dataloaders["val"] if "val" in dataloaders.keys(
+    # ) else None
 
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     train_losses, val_losses = train(
-        model, optimizer, train_dataloader, val_dataloader, num_epochs)
+        model, optimizer, train_dataloader, None, num_epochs)
 
     return model, train_losses, val_losses
 
@@ -55,7 +47,7 @@ def train(model, optimizer, train_dataloader, val_dataloader=None, epochs=10):
     val_losses = []
 
     scheduler = get_linear_schedule_with_warmup(
-        optimizer=optimizer, num_warmup_steps=100, num_training_steps=epochs*len(train_dataloader))
+        optimizer=optimizer, num_warmup_steps=0, num_training_steps=epochs*len(train_dataloader))
 
     model.train()
     for i in range(epochs):
@@ -102,19 +94,22 @@ def eval(model, eval_dataloader):
 
 
 if __name__ == "__main__":
-
     # parse yaml
     hyperparameter_file = Path(__file__).parent / \
         "configs" / "hyperparameters.yaml"
     with open(hyperparameter_file, "r") as f:
         args = yaml.safe_load(f)
 
+    
     model, train_losses, val_losses = tune(**args)
     print(args)
 
     if args['save_model']:
-        torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
-        torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
+        if args['tuner'] == "prefix":
+            torch.save(model.P_prime.state_dict(), f"models/{args['run_name']}_prime.pth")
+            torch.save(model.P_mlp.state_dict(), f"models/{args['run_name']}_mlp.pth")
+        elif args['tuner'] == "fine":
+            torch.save(model.state_dict(), f"models/{args['run_name']}_fine.pth")
 
     # plt.plot(train_losses)
     # plt.xlabel("epochs")

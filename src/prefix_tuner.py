@@ -30,6 +30,8 @@ class PrefixTuning(nn.Module):
         self.P_mlp = nn.Sequential(  # real P
             nn.Linear(self.hidden_dim, self.k),
             nn.Tanh(),
+            # nn.Linear(self.k, self.k),
+            # nn.Tanh(),
             nn.Linear(self.k, self.n_layer*2*self.hidden_dim)
         ).to(self.device)
 
@@ -103,23 +105,27 @@ class PrefixTuning(nn.Module):
         return input_ids
 
 
+
 @torch.no_grad()
 def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_token=None):
-    device = input_ids.device
+    device = input_ids.device  # Automatically use the device of input_ids
+    model.to(device)
+
+    input_ids = input_ids.to(device)
 
     if attention_mask is None:
-        attention_mask = torch.ones_like(input_ids)
+        attention_mask = torch.ones_like(input_ids, device=device)
+    else:
+        attention_mask = attention_mask.to(device)
 
-    outputs = model.forward(input_ids=input_ids, use_cache=True)
+    outputs = model(input_ids=input_ids[:, :-1], attention_mask=attention_mask, use_cache=True)
     past_key_values = outputs.past_key_values
 
-    # for _ in range(max_new_tokens):
     for _ in range(max_new_tokens):
         last_token = input_ids[:, -1:].to(device)
-        # print("past kv", past_key_values[0, -1, -1, -1, -1])
-        # print("last token", last_token)
-        outputs = model.forward(
-            last_token,
+
+        outputs = model(
+            input_ids=last_token,
             attention_mask=attention_mask,
             past_key_values=past_key_values,
             use_cache=True
@@ -127,19 +133,17 @@ def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_toke
 
         past_key_values = outputs.past_key_values
         logits = outputs.logits  # [batch_size, seq_len, vocab_size]
-        next_token = torch.argmax(
-            logits[-1, :], dim=-1, keepdim=True)  # [batch_size, 1]
+        next_token = torch.argmax(logits[:, -1, :], dim=-1, keepdim=True)  # [batch_size, 1]
 
-        # Update stopped flags
-        if next_token == eos_token:
+        # Check for end of sequence
+        if eos_token is not None and (next_token == eos_token).all():
             break
 
-        # Append to sequences
+        # Append token
         input_ids = torch.cat((input_ids, next_token), dim=1)
 
-        # Update attention mask: 1 for new tokens, 0 if padded
-        new_mask = torch.tensor(
-            [1], dtype=torch.long, device=attention_mask.device).unsqueeze(1)
+        # Update attention mask
+        new_mask = torch.ones((input_ids.size(0), 1), dtype=torch.long, device=device)
         attention_mask = torch.cat((attention_mask, new_mask), dim=1)
 
     return input_ids
@@ -148,46 +152,101 @@ def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_toke
 @torch.no_grad()
 def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos_token_id=None):
     device = input_ids.device
+    model.to(device)
     model.eval()
+    input_ids = input_ids.to(device)
 
-    # Initialize beams
-    beams = [(input_ids, 0.0)]  # Each item: (token_sequence, score)
+    # Initialize beams: list of (sequence, score, past_key_values)
+    outputs = model(input_ids=input_ids, use_cache=True)
+    past_key_values = outputs.past_key_values
+    logits = outputs.logits[:, -1, :]
+    log_probs = F.log_softmax(logits, dim=-1)
+    topk_log_probs, topk_indices = torch.topk(log_probs, beam_width, dim=-1)
 
-    for _ in range(max_new_tokens):
+    beams = []
+    for i in range(beam_width):
+        token = topk_indices[0, i].view(1, 1).to(device)
+        score = topk_log_probs[0, i].item()
+        new_seq = torch.cat([input_ids, token], dim=1)
+        beams.append((new_seq, score, past_key_values))
+
+    for step in range(1, max_new_tokens):
         new_beams = []
 
-        for seq, score in beams:
-            # Stop if last token is EOS
+        for seq, score, past_kv in beams:
             if eos_token_id is not None and seq[0, -1].item() == eos_token_id:
-                new_beams.append((seq, score))
+                new_beams.append((seq, score, past_kv))
                 continue
 
-            outputs = model(seq)
-            logits = outputs.logits[:, -1, :]  # shape: [1, vocab_size]
-            log_probs = F.log_softmax(logits, dim=-1)
+            next_token = seq[:, -1:]  # just the last token
+            outputs = model(
+                input_ids=next_token,
+                past_key_values=past_kv,
+                use_cache=True
+            )
 
-            topk_log_probs, topk_indices = torch.topk(
-                log_probs, beam_width, dim=-1)
+            logits = outputs.logits[:, -1, :]
+            log_probs = F.log_softmax(logits, dim=-1)
+            topk_log_probs, topk_indices = torch.topk(log_probs, beam_width, dim=-1)
 
             for i in range(beam_width):
-                next_token = topk_indices[0, i].unsqueeze(
-                    0).unsqueeze(0)  # shape: [1,1]
+                token = topk_indices[0, i].view(1, 1).to(device)
                 next_score = score + topk_log_probs[0, i].item()
+                new_seq = torch.cat([seq, token], dim=1)
+                new_beams.append((new_seq, next_score, outputs.past_key_values))
 
-                new_seq = torch.cat([seq, next_token], dim=1)
-                new_beams.append((new_seq, next_score))
+        beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_width]
 
-        # Keep top beams
-        beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[
-            :beam_width]
-
-        # Optional early stopping if all beams end with EOS
-        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
+        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _, _ in beams):
             break
 
-    # Return best sequence
-    best_seq = beams[0][0]
-    return best_seq
+    return beams[0][0]
+
+
+# @torch.no_grad()
+# def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos_token_id=None):
+#     device = input_ids.device
+#     model.to(device)
+#     model.eval()
+
+#     # Ensure input is on the correct device
+#     input_ids = input_ids.to(device)
+
+#     # Initialize beams: list of (sequence, cumulative log-probability)
+#     beams = [(input_ids, 0.0)]
+
+#     for step in range(max_new_tokens):
+#         new_beams = []
+
+#         for seq, score in beams:
+#             # Stop expanding if EOS token was generated
+#             if step > 0 and eos_token_id is not None and seq[0, -1].item() == eos_token_id:
+#                 new_beams.append((seq, score))
+#                 continue
+
+#             # Forward pass
+#             outputs = model(seq)
+#             logits = outputs.logits[:, -1, :]  # shape: [1, vocab_size]
+#             log_probs = F.log_softmax(logits, dim=-1)  # shape: [1, vocab_size]
+
+#             topk_log_probs, topk_indices = torch.topk(log_probs, beam_width, dim=-1)
+
+#             for i in range(beam_width):
+#                 next_token = topk_indices[0, i].view(1, 1).to(device)  # shape: [1, 1]
+#                 next_score = score + topk_log_probs[0, i].item()
+
+#                 new_seq = torch.cat([seq, next_token], dim=1).to(device)
+#                 new_beams.append((new_seq, next_score))
+
+#         # Keep top scoring beams
+#         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_width]
+
+#         # Early stopping if all beams end with EOS
+#         if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
+#             break
+
+#     # Return best scoring sequence
+#     return beams[0][0]
 
 
 def get_n_params(model):
@@ -222,10 +281,11 @@ if __name__ == "__main__":
     for i, (k, v) in enumerate(examples.items()):
         tokenized = tokenizer(k, truncation=True, return_tensors='pt')
         print(tokenized["input_ids"])
-        output_ids = model.generate(
+        output_ids = beam_search_generate(
+            model,
             tokenized["input_ids"],
-            attention_mask=tokenized["attention_mask"],
-            eos_token=tokenizer.eos_token_id
+            # attention_mask=tokenized["attention_mask"],
+            eos_token_id=tokenizer.eos_token_id
         )
         # print(tokenizer.convert_ids_to_tokens(output_ids[0]))
         print(output_ids)
