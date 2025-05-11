@@ -41,13 +41,13 @@ def train_small_data(args):
                 torch.save(model.P_mlp.state_dict(), f"models/e2e_prefix_mlp_{size}_{i+1}.pth")
 
 def test_small_data():
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
     input_filepath = "data/e2e_data/src1_test.txt"
     for i in range(TRIALS):
         for size in SIZES:
             # Load prefix-tuned model
-            model = GPT2LMHeadModel.from_pretrained("gpt2")
+            model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
             prefix_model = PrefixTuning(model, prefix_len=5, k=800)
             prefix_model.init_P_weights(
                 "models/e2e_prefix_prime.pth",

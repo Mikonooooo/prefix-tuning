@@ -22,7 +22,37 @@ NO BEAM
 |CIDEr: 2.1222       | CIDEr: 2.1928             | CIDEr: 2.2885
 
 
+Fine tune medium
+==============
+BLEU: 0.6882
+NIST: 8.7973
+METEOR: 0.4579
+ROUGE_L: 0.7134
+CIDEr: 2.4135
 
+Fine tune small:
+==============
+BLEU: 0.7032
+NIST: 8.9437
+METEOR: 0.4622
+ROUGE_L: 0.7216
+CIDEr: 2.4671
+
+Prefix paper params, medium:
+==============
+BLEU: 0.6888
+NIST: 8.6871
+METEOR: 0.4589
+ROUGE_L: 0.7122
+CIDEr: 2.4576
+
+Prefix paper params, small:
+==============
+BLEU: 0.6835
+NIST: 8.6906
+METEOR: 0.4492
+ROUGE_L: 0.7044
+CIDEr: 2.4005
 
 Prefix No warmup w/ BEAM SCORES:
 ==============

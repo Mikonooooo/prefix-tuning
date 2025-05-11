@@ -17,16 +17,17 @@ DATA_PATH = "data/e2e_data/"
 def tune(run_name, tuner, data_filepath, num_epochs, batch_size, prefix_len, lr, save_model=False, k = 800):
     files = {"train": data_filepath}
 
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if tuner == "prefix":
-        gpt_model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+        gpt_model = GPT2LMHeadModel.from_pretrained("gpt2-medium").to(device)
         model = PrefixTuning(gpt_model, k=k, prefix_len=prefix_len).to(device)
     elif tuner == "fine":
-        model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+        print('fine tuning')
+        model = GPT2LMHeadModel.from_pretrained("gpt2-medium").to(device)
 
     dataloaders = make_dataloaders(files, tokenizer, batch_size=batch_size)
     print(dataloaders)

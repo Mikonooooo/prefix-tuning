@@ -67,24 +67,25 @@ def write_output_file(input_path, model, tokenizer, generated_path):
 
 if __name__ == "__main__":
     device = "cuda" 
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    run_name = "paper-medium-ft_fine"
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
     input_filepath = "data/e2e_data/src1_test.txt"
 
     # Load prefix-tuned model
-    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-    prefix_model = PrefixTuning(model, prefix_len=3, k=800)
-    prefix_model.init_P_weights(
-        "models/final_preflen3_prime.pth",
-        "models/final_preflen3_mlp.pth"
-    )
-    gen_filepath = "evals/final_preflen3.txt"
-    write_output_file(
-        input_filepath, prefix_model, tokenizer, gen_filepath)
+    # model = GPT2LMHeadModel.from_pretrained("gpt2-medium").to(device)
+    # prefix_model = PrefixTuning(model, prefix_len=5, k=800)
+    # prefix_model.init_P_weights(
+    #     f"models/{run_name}_prime.pth",
+    #     f"models/{run_name}_mlp.pth"
+    # )
+    # gen_filepath = f"evals/{run_name}.txt"
+    # write_output_file(
+    #     input_filepath, prefix_model, tokenizer, gen_filepath)
 
     ## Load finetuned model
-    # model = GPT2LMHeadModel.from_pretrained("gpt2")
-    # model.load_state_dict(torch.load(
-    #     "models/gpt_5e-5_fine.pth", map_location="cuda"))  # or "cuda"
-    # gen_filepath = "evals/gpt-5e5-beam.txt"
-    # write_output_file(input_filepath, model, tokenizer, gen_filepath)
+    model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
+    model.load_state_dict(torch.load(
+        f"models/{run_name}.pth", map_location="cuda"))  # or "cuda"
+    gen_filepath = f"evals/{run_name}.txt"
+    write_output_file(input_filepath, model, tokenizer, gen_filepath)

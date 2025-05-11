@@ -1,3 +1,39 @@
+# run_name: "paper"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 5
+# lr: 0.00008
+# save_model: True # [True, False]
+
+# run_name: "paper-medium"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 5
+# lr: 0.00008
+# save_model: True # [True, False]
+
+run_name: "paper-medium-ft"
+tuner: "fine" # ['fine', 'prefix']
+data_filepath: "data/e2e_data/src1_train.txt"
+num_epochs: 5
+batch_size: 10
+prefix_len: 5
+lr: 0.00005
+save_model: True # [True, False]
+
+# run_name: "paper-large"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 5
+# lr: 0.00008
+# save_model: True # [True, False]
+
 # run_name: "final_preflen10"
 # tuner: "prefix" # ['fine', 'prefix']
 # data_filepath: "data/e2e_data/src1_train.txt"
@@ -25,14 +61,14 @@
 # lr: 0.00008
 # save_model: True # [True, False]
 
-run_name: "final_preflen3"
-tuner: "prefix" # ['fine', 'prefix']
-data_filepath: "data/e2e_data/src1_train.txt"
-num_epochs: 5
-batch_size: 10
-prefix_len: 3
-lr: 0.00008
-save_model: True # [True, False]
+# run_name: "final_preflen3"
+# tuner: "prefix" # ['fine', 'prefix']
+# data_filepath: "data/e2e_data/src1_train.txt"
+# num_epochs: 5
+# batch_size: 10
+# prefix_len: 3
+# lr: 0.00008
+# save_model: True # [True, False]
 
 # run_name: "gpt_5e-5"
 # tuner: "prefix" # ['fine', 'prefix']

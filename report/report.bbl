@@ -8,14 +8,22 @@
 \bibitem[Li and Liang(2021)]{li-liang-2021-prefix}
 Xiang~Lisa Li and Percy Liang.
 \newblock Prefix-tuning: Optimizing continuous prompts for generation.
-\newblock In Chengqing Zong, Fei Xia, Wenjie Li, and Roberto Navigli, editors, \emph{Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)}, pages 4582--4597, Online, August 2021. Association for Computational Linguistics.
+\newblock In Chengqing Zong, Fei Xia, Wenjie Li, and Roberto Navigli, editors,
+  \emph{Proceedings of the 59th Annual Meeting of the Association for
+  Computational Linguistics and the 11th International Joint Conference on
+  Natural Language Processing (Volume 1: Long Papers)}, pages 4582--4597,
+  Online, August 2021. Association for Computational Linguistics.
 \newblock \doi{10.18653/v1/2021.acl-long.353}.
 \newblock URL \url{https://aclanthology.org/2021.acl-long.353/}.
 
-\bibitem[Novikova et~al.(2017)Novikova, Du{\v{s}}ek, and Rieser]{novikova-etal-2017-e2e}
+\bibitem[Novikova et~al.(2017)Novikova, Du{\v{s}}ek, and
+  Rieser]{novikova-etal-2017-e2e}
 Jekaterina Novikova, Ond{\v{r}}ej Du{\v{s}}ek, and Verena Rieser.
 \newblock The {E}2{E} dataset: New challenges for end-to-end generation.
-\newblock In Kristiina Jokinen, Manfred Stede, David DeVault, and Annie Louis, editors, \emph{Proceedings of the 18th Annual {SIG}dial Meeting on Discourse and Dialogue}, pages 201--206, Saarbr{\"u}cken, Germany, August 2017. Association for Computational Linguistics.
+\newblock In Kristiina Jokinen, Manfred Stede, David DeVault, and Annie Louis,
+  editors, \emph{Proceedings of the 18th Annual {SIG}dial Meeting on Discourse
+  and Dialogue}, pages 201--206, Saarbr{\"u}cken, Germany, August 2017.
+  Association for Computational Linguistics.
 \newblock \doi{10.18653/v1/W17-5525}.
 \newblock URL \url{https://aclanthology.org/W17-5525/}.
 

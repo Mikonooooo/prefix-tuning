@@ -90,7 +90,7 @@ if __name__ == "__main__":
     filepath = "data/e2e_data/src1_test.txt"
     target_path = "target_file_test.txt"
     
-    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     # # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
     # print(tokenizer.eos_token_id)
     # print(tokenizer.eos_token)

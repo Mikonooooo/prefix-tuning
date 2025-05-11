@@ -197,7 +197,7 @@ def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos
 
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_width]
 
-        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
+        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _, _ in beams):
             break
 
     best_seq = beams[0][0]
@@ -215,8 +215,8 @@ def get_n_params(model):
 
 
 if __name__ == "__main__":
-    gpt_model = GPT2LMHeadModel.from_pretrained("gpt2")
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    gpt_model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
     # if you actually want to use it'
     model = PrefixTuning(gpt_model, prefix_len=5)
@@ -225,8 +225,8 @@ if __name__ == "__main__":
         "models/e2e_prefix_prime.pth",
         "models/e2e_prefix_mlp.pth"
     )
-    # model = GPT2LMHeadModel.from_pretrained("gpt2")
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
     model.eval()
 
