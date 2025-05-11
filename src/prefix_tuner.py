@@ -197,56 +197,11 @@ def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos
 
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_width]
 
-        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _, _ in beams):
+        if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
             break
 
-    return beams[0][0]
-
-
-# @torch.no_grad()
-# def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos_token_id=None):
-#     device = input_ids.device
-#     model.to(device)
-#     model.eval()
-
-#     # Ensure input is on the correct device
-#     input_ids = input_ids.to(device)
-
-#     # Initialize beams: list of (sequence, cumulative log-probability)
-#     beams = [(input_ids, 0.0)]
-
-#     for step in range(max_new_tokens):
-#         new_beams = []
-
-#         for seq, score in beams:
-#             # Stop expanding if EOS token was generated
-#             if step > 0 and eos_token_id is not None and seq[0, -1].item() == eos_token_id:
-#                 new_beams.append((seq, score))
-#                 continue
-
-#             # Forward pass
-#             outputs = model(seq)
-#             logits = outputs.logits[:, -1, :]  # shape: [1, vocab_size]
-#             log_probs = F.log_softmax(logits, dim=-1)  # shape: [1, vocab_size]
-
-#             topk_log_probs, topk_indices = torch.topk(log_probs, beam_width, dim=-1)
-
-#             for i in range(beam_width):
-#                 next_token = topk_indices[0, i].view(1, 1).to(device)  # shape: [1, 1]
-#                 next_score = score + topk_log_probs[0, i].item()
-
-#                 new_seq = torch.cat([seq, next_token], dim=1).to(device)
-#                 new_beams.append((new_seq, next_score))
-
-#         # Keep top scoring beams
-#         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_width]
-
-#         # Early stopping if all beams end with EOS
-#         if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
-#             break
-
-#     # Return best scoring sequence
-#     return beams[0][0]
+    best_seq = beams[0][0]
+    return best_seq
 
 
 def get_n_params(model):

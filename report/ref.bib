@@ -1,0 +1,38 @@
+@inproceedings{li-liang-2021-prefix,
+    title = "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+    author = "Li, Xiang Lisa  and
+      Liang, Percy",
+    editor = "Zong, Chengqing  and
+      Xia, Fei  and
+      Li, Wenjie  and
+      Navigli, Roberto",
+    booktitle = "Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)",
+    month = aug,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.acl-long.353/",
+    doi = "10.18653/v1/2021.acl-long.353",
+    pages = "4582--4597",
+    abstract = "Fine-tuning is the de facto way of leveraging large pretrained language models for downstream tasks. However, fine-tuning modifies all the language model parameters and therefore necessitates storing a full copy for each task. In this paper, we propose prefix-tuning, a lightweight alternative to fine-tuning for natural language generation tasks, which keeps language model parameters frozen and instead optimizes a sequence of continuous task-specific vectors, which we call the prefix. Prefix-tuning draws inspiration from prompting for language models, allowing subsequent tokens to attend to this prefix as if it were {\textquotedblleft}virtual tokens{\textquotedblright}. We apply prefix-tuning to GPT-2 for table-to-text generation and to BART for summarization. We show that by learning only 0.1{\%} of the parameters, prefix-tuning obtains comparable performance in the full data setting, outperforms fine-tuning in low-data settings, and extrapolates better to examples with topics that are unseen during training."
+}
+
+@inproceedings{novikova-etal-2017-e2e,
+    title = "The {E}2{E} Dataset: New Challenges For End-to-End Generation",
+    author = "Novikova, Jekaterina  and
+      Du{\v{s}}ek, Ond{\v{r}}ej  and
+      Rieser, Verena",
+    editor = "Jokinen, Kristiina  and
+      Stede, Manfred  and
+      DeVault, David  and
+      Louis, Annie",
+    booktitle = "Proceedings of the 18th Annual {SIG}dial Meeting on Discourse and Dialogue",
+    month = aug,
+    year = "2017",
+    address = {Saarbr{\"u}cken, Germany},
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/W17-5525/",
+    doi = "10.18653/v1/W17-5525",
+    pages = "201--206",
+    abstract = "This paper describes the E2E data, a new dataset for training end-to-end, data-driven natural language generation systems in the restaurant domain, which is ten times bigger than existing, frequently used datasets in this area. The E2E dataset poses new challenges: (1) its human reference texts show more lexical richness and syntactic variation, including discourse phenomena; (2) generating from this set requires content selection. As such, learning from this dataset promises more natural, varied and less template-like system utterances. We also establish a baseline on this dataset, which illustrates some of the difficulties associated with this data."
+}
