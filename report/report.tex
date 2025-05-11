@@ -29,7 +29,6 @@ We chose this people it's the first major result of the paper that prefix-tuning
 
 \section{Methodology}
 
-
 \subsection{Prefix-Tuning}
 We fine-tune GPT-2 Medium. The model is a stack of attention blocks. For each attention block $i$, we learn the first $L$ keys and values via a network, $\textsf{MLP}_{\theta,i}$ and input matrix $P_{\theta,i}$. $P_{\theta,i}$ is of dimension $L\times 768$. The MLP is 2 layers. A linear layer from $768$ to $800$, followed by a tanh activation, and a linear layer from $800$ to the embedding dimension of $2\cdot 768$ (time $2$ because of key and value).
 
@@ -49,9 +48,9 @@ Finally, prefix-tuning is trained by running 5 epochs over the E2E dataset, with
         \textbf{Model} & \textbf{BLEU} & \textbf{NIST} & \textbf{METEOR} & \textbf{ROUGE-L} & \textbf{CIDEr} \\
         \hline
         Prefix-Tuning (0.1\%) & 68.5 & 8.71 & 44.3 & 70.4 & 2.34 \\
-        Full Fine-Tuning & \textbf{70.3} & \textbf{8.94} & \textbf{46.2} & \textbf{72.2} & \textbf{2.47}\\
-        Li: Prefix-Tuning (0.1\%) & 69.7 & 8.81 & 46.1 & 71.4 & 2.49 \\
-        Li: Fine-Tuning & 68.2 & 8.62 & \textbf{46.2} & {71.0} & \textbf{2.47}
+        Fine-Tuning & \textbf{70.3} & \textbf{8.94} & \textbf{46.2} & \textbf{72.2} & \textbf{2.47}\\
+        Prefix-Tuning (0.1\%)~\cite{li-liang-2021-prefix}  & 69.7 & 8.81 & 46.1 & 71.4 & 2.49 \\
+        Fine-Tuning~\cite{li-liang-2021-prefix} & 68.2 & 8.62 & \textbf{46.2} & {71.0} & \textbf{2.47}
     \end{tabular}
     \caption{Results of prefix-tuning and full fine-tuning on the E2E table-to-text generation dataset.}
     \label{tab:results}

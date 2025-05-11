@@ -113,11 +113,8 @@ def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_toke
     outputs = model.forward(input_ids=input_ids, use_cache=True)
     past_key_values = outputs.past_key_values
 
-    # for _ in range(max_new_tokens):
     for _ in range(max_new_tokens):
         last_token = input_ids[:, -1:].to(device)
-        # print("past kv", past_key_values[0, -1, -1, -1, -1])
-        # print("last token", last_token)
         outputs = model.forward(
             last_token,
             attention_mask=attention_mask,
@@ -130,14 +127,10 @@ def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_toke
         next_token = torch.argmax(
             logits[-1, :], dim=-1, keepdim=True)  # [batch_size, 1]
 
-        # Update stopped flags
         if next_token == eos_token:
             break
 
-        # Append to sequences
         input_ids = torch.cat((input_ids, next_token), dim=1)
-
-        # Update attention mask: 1 for new tokens, 0 if padded
         new_mask = torch.tensor(
             [1], dtype=torch.long, device=attention_mask.device).unsqueeze(1)
         attention_mask = torch.cat((attention_mask, new_mask), dim=1)
@@ -150,14 +143,12 @@ def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos
     device = input_ids.device
     model.eval()
 
-    # Initialize beams
-    beams = [(input_ids, 0.0)]  # Each item: (token_sequence, score)
+    beams = [(input_ids, 0.0)]  # (token_sequence, score)
 
     for _ in range(max_new_tokens):
         new_beams = []
 
         for seq, score in beams:
-            # Stop if last token is EOS
             if eos_token_id is not None and seq[0, -1].item() == eos_token_id:
                 new_beams.append((seq, score))
                 continue
@@ -177,15 +168,12 @@ def beam_search_generate(model, input_ids, beam_width=5, max_new_tokens=200, eos
                 new_seq = torch.cat([seq, next_token], dim=1)
                 new_beams.append((new_seq, next_score))
 
-        # Keep top beams
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[
             :beam_width]
 
-        # Optional early stopping if all beams end with EOS
         if eos_token_id is not None and all(seq[0, -1].item() == eos_token_id for seq, _ in beams):
             break
 
-    # Return best sequence
     best_seq = beams[0][0]
     return best_seq
 
