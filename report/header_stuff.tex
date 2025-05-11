@@ -1,0 +1,173 @@
+\usepackage{amsfonts,amsthm,amsmath,amssymb}
+\usepackage{array}
+\usepackage{epsfig}
+\usepackage{fullpage}
+\usepackage{enumerate}
+\usepackage[hidelinks]{hyperref}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage{comment}\usepackage{amsfonts,amsthm,amsmath,amssymb}
+\usepackage{array}
+\usepackage{epsfig}
+\usepackage{fullpage}
+\usepackage{enumerate}
+\usepackage[hidelinks]{hyperref}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage{comment}
+\usepackage{cryptocode}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{subcaption}
+\usepackage{mathpartir}
+
+\usepackage[hyperpageref]{backref} %% puts links to the page numbers where a bib entry is cited after the bib entry---particularly useful for getting back to where you started after clicking on a citation
+
+\usepackage[numbers]{natbib}  % Enables numbered citations
+\bibliographystyle{plainnat}  % A numeric style compatible with natbib
+\hypersetup{
+    colorlinks=true,
+    linkcolor=purple,
+    filecolor=purple,      
+    urlcolor=purple,
+    citecolor=purple
+    }
+
+
+\usepackage{mathtools}  
+\usepackage{diffcoeff}  
+
+\renewcommand{\vec}{\mathbf}
+
+
+\newcounter{algo}
+\newenvironment{algo}[1]
+  {\refstepcounter{algo}
+    \medskip
+    \noindent\rule{\columnwidth}{1pt} \nopagebreak
+    {\bf Algorithm #1} 
+
+    \nopagebreak 
+    \noindent\rule{\columnwidth}{0.4pt}
+
+    \small\noindent
+  }
+  {\noindent\rule{\columnwidth}{1pt}
+  \medskip
+  }
+
+\newcommand{\EC}{\textbf{(EC)} }
+
+\newcommand{\Gen}{\mathsf{Gen}}
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Dec}{\mathsf{Dec}}
+\newcommand{\Samp}{\mathsf{Samp}}
+\newcommand{\Comp}{\mathsf{Comp}}
+
+\newcommand{\MAC}{\mathsf{MAC}}
+\newcommand{\Sign}{\mathsf{Sign}}
+\newcommand{\Ver}{\mathsf{Ver}}
+
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\bad}{\mathsf{BAD}}
+\newcommand{\uu}{\mathcal{U}}
+
+\newcommand{\adversary}{\mathcal{A}}
+\newcommand{\bb}{\mathcal{B}}
+\newcommand{\mm}{\mathcal{M}}
+
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\K}{\mathcal{K}}
+\def\zo{\{0,1\}}
+%\newcommand{\from}{\leftarrow}
+\newcommand{\eps}{\varepsilon}
+\renewcommand{\epsilon}{\varepsilon}
+\usepackage{enumitem}
+
+\newcommand{\nnote}[1]{{\color{blue} \footnotesize(Noah: #1)}}
+% \newcommand{\nnote}[1]{}
+\newcommand{\A}{\mathcal{A}}
+
+\newcommand\extlines[1]{%
+	\setcounter{index}{0}%
+	\whiledo {\value{index}< #1}
+	{\addtocounter{index}{1}\extline}
+}
+
+%\newcommand\rextlinearrow[2]{$
+%  \setbox0\hbox{$\extlines{#2}\rextlineend$}%
+%  \tiny$%
+%  \!\!\!\!\begin{array}{c}%
+%  \mathrm{#1}\\%
+%  \usebox0%
+%  \end{array}%
+%  $\normalsize$\!\!%
+%}
+%
+%\newcommand\lextlinearrow[2]{$
+%  \setbox0\hbox{$\lextlineend\extlines{#2}$}%
+%  \tiny%
+%  $%
+%  \!\!\!\!\begin{array}{c}%
+%  \mathrm{#1}\\%
+%  \usebox0%
+%  \end{array}%
+%  $\normalsize$\!\!%
+%}
+
+\newcommand\lextlinearrow[1]{%
+	$\xleftarrow{\mathmakebox[.4\hsize]{\shortstack{$#1$}}}$
+}
+
+\newcommand\rextlinearrow[1]{%
+	$\xrightarrow{\mathmakebox[.4\hsize]{\shortstack{$#1$}}}$
+}
+
+\newlength{\protocollength}
+\setlength{\protocollength}{0.98\textwidth}
+
+
+\newcommand{\protocol}[1]{
+	\small
+	%\begin{center}
+	\begin{tabular}{l c l}
+	%{\protocollength}{>{\hsize=1\hsize}X >{\hsize=1\hsize}X >{\hsize=1\hsize}X}
+% 	\begin{tabu}%to\protocollength{X X[-.8] X}
+		%\hline
+		{\bfseries Adversary} & & {\bfseries Challenger}\\
+		%\multicolumn{1}{c}{\bf Alice}&&
+		%$\procedure{}\ \mathrm{Alice}(m)$ & &
+		%\multicolumn{1}{c}{\bf Bob}\\
+		%$\procedure{}\ \mathrm{Bob}()$\\
+		%\hline
+		\hline
+		%\rule{4 cm}{0pt}&\rule{5 cm}{0pt}&\rule{4 cm}{0pt}\\
+		#1
+% 	\end{tabu}
+	\end{tabular}
+	%\end{center}
+}
+\newcommand{\bobtoalice}[1]{& \lextlinearrow{#1}&\\}
+%\newcommand{\notbobtoalice}[1]{& \lextlinearrow{\xcancel{#1}}{26}&\\}
+\newcommand{\alicetobob}[1]{& \rextlinearrow{#1}&\\}
+%\newcommand{\notalicetobob}[1]{& \rextlinearrow{\xcancel{#1}}{26}&\\}
+\newcommand{\boxalicetobob}[1]{& \begin{boxedminipage}{15 em} \rextlinearrow{#1}{26} \end{boxedminipage}&\\}
+\newcommand{\bobcompute}[1]{&& #1\\}
+\newcommand{\alicecompute}[1]{#1 &&\\}
+\newcommand{\cominput}[1]{\texttt{INPUT: }$#1$}
+\newcommand{\comif}{\texttt{IF\ }}
+\newcommand{\comfor}{\texttt{FOR\ }}
+\newcommand{\comand}{\texttt{AND\ }}
+\newcommand{\comor}{\texttt{OR\ }}
+\newcommand{\comelse}{\texttt{ELSE}}
+\newcommand{\comreturn}{\texttt{RETURN\ }}
+\newcommand{\comoutput}{\texttt{OUTPUT\ }}
+
+\NewEnviron{solution}[1][\vspace{0pt}]{
+    
+    {\vspace{10pt} \textcolor{blue}{
+    \BODY $\hfill\blacksquare$
+    \vspace{10pt}}}
+    {#1}  
+}
