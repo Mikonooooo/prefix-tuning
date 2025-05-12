@@ -218,7 +218,6 @@ if __name__ == "__main__":
     gpt_model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
-    # if you actually want to use it'
     model = PrefixTuning(gpt_model, prefix_len=5)
 
     model.init_P_weights(

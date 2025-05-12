@@ -85,23 +85,3 @@ if __name__ == "__main__":
     if args['save_model']:
         torch.save(model.P_prime.state_dict(), "models/e2e_prefix_prime.pth")
         torch.save(model.P_mlp.state_dict(), "models/e2e_prefix_mlp.pth")
-
-    # plt.plot(train_losses)
-    # plt.xlabel("epochs")
-    # plt.ylabel("average loss")
-    # plt.title("training loss on medium data")
-    # plt.savefig("medium_train_losses.png")
-
-    # plt.plot(val_losses)
-    # plt.xlabel("epochs")
-    # plt.ylabel("average loss")
-    # plt.title("validation loss on medium data")
-    # plt.savefig("medium_val_losses.png")
-
-    # print(model.config)
-    # print(model.device)
-    # for inputs in small_dataloader:
-    #     print(inputs["input_ids"].shape)
-    #     outputs = model(**inputs)
-    #     print(outputs.loss)
-    #     break

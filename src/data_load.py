@@ -16,7 +16,6 @@ def get_dict_from_data(filepath: str, tokenizer: GPT2Tokenizer) -> list[str]:
             table = ' {} {}'.format(table, tokenizer.bos_token)
 
             examples.setdefault(table, [])
-            # append all sentences that map from table data
             examples[table].append(text)
     return examples
 
@@ -32,16 +31,12 @@ class e2eDataset(Dataset):
                 table, text = line.split("||")
                 example = ' {} {} {} {}'.format(
                     table, tokenizer.bos_token, text, tokenizer.eos_token)
-                # text = ' {} {}'.format(text, tokenizer.eos_token)
                 self.examples.append(example)
 
     def __len__(self):
         return len(self.examples)
 
     def __getitem__(self, index):
-        # table, text = self.examples[index]
-        # tokenized_table = self.tokenizer(table, truncation=True)
-        # tokenized_text = self.tokenizer(text, truncation=True)
         tokenized = self.tokenizer(self.examples[index], truncation=True)
 
         # mask out table in labels
@@ -84,46 +79,6 @@ def make_dataloaders(files, tokenizer, batch_size):
             datasets[name] = dataloader
     return datasets
 
-
-
-if __name__ == "__main__":
-    filepath = "data/e2e_data/src1_test.txt"
-    target_path = "target_file_test.txt"
-    
-    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
-    # # print(tokenizer.bos_token, tokenizer.eos_token, tokenizer.pad_token)
-    # print(tokenizer.eos_token_id)
-    # print(tokenizer.eos_token)
-    # print(tokenizer.pad_token_id)
-    # tokenizer.pad_token = tokenizer.eos_token
-    # print(tokenizer.pad_token, tokenizer.pad_token_id)
-    # # tokenizer.add_prefix_space = True
-    # # get_dict_from_data(filepath, tokenizer)
-    # dataset = e2eDataset(filepath, tokenizer)
-    # x = dataset.__getitem__(0)
-    # print(tokenizer.decode(x["input_ids"]))
-    # print(tokenizer(" ")["input_ids"])
-    # print(tokenizer.decode([1438]))
-    # print(tokenizer.decode([3672]))
-    # print(x["input_ids"])
-    # # print(x["labels"])
-
-    # dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
-    #                         collate_fn=lambda batch: collate_fn(batch, tokenizer.pad_token_id))
-    # for batch in dataloader:
-    #     print(batch)
-    #     break
-    
-    
-    # # Generate small train dataset
-    # base = "data/e2e_data/"
-    # filepath = base + "src1_train.txt"
-    # outfilepath = base + "small_train.txt"
-
-    # examples = get_dict_from_data(filepath, tokenizer)
-    # for k, v in examples.items():
-    #     print(k, v)
-    #     break
 
     
     
