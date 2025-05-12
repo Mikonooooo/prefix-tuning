@@ -135,14 +135,10 @@ def generate(model, input_ids, attention_mask=None, max_new_tokens=200, eos_toke
         logits = outputs.logits  # [batch_size, seq_len, vocab_size]
         next_token = torch.argmax(logits[:, -1, :], dim=-1, keepdim=True)  # [batch_size, 1]
 
-        # Check for end of sequence
         if eos_token is not None and (next_token == eos_token).all():
             break
 
-        # Append token
         input_ids = torch.cat((input_ids, next_token), dim=1)
-
-        # Update attention mask
         new_mask = torch.ones((input_ids.size(0), 1), dtype=torch.long, device=device)
         attention_mask = torch.cat((attention_mask, new_mask), dim=1)
 
@@ -241,7 +237,6 @@ if __name__ == "__main__":
             # attention_mask=tokenized["attention_mask"],
             eos_token_id=tokenizer.eos_token_id
         )
-        # print(tokenizer.convert_ids_to_tokens(output_ids[0]))
         print(output_ids)
         start_idx = (output_ids[0] ==
                      tokenizer.bos_token_id).nonzero().flatten()[0]
