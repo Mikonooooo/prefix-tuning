@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex report"] 1747056111.86307 "report.aux" "report.bbl" "report" 1747056169.02018 0
+["bibtex report"] 1747056111.86307 "report.aux" "report.bbl" "report" 1747084572.94625 0
   "./ref.bib" 1746981161.70534 3111 5828ffbd009eddd0e9490645f1c2d535 ""
   "/usr/local/texlive/2024/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "report.aux" 1747056168.70613 2744 c4595e9834ec90df6e08f9727842d287 "pdflatex"
+  "report.aux" 1747084572.64677 2744 c4595e9834ec90df6e08f9727842d287 "pdflatex"
   (generated)
   "report.bbl"
   "report.blg"
   (rewritten before read)
-["pdflatex"] 1747056167.64411 "/Users/eric/Documents/classes/4782/prefix-tuning/report/report.tex" "report.pdf" "report" 1747056169.02031 0
-  "/Users/eric/Documents/classes/4782/prefix-tuning/report/report.tex" 1747056167.41508 7136 137d9d7e573d7c651a6da6d8cbc3d19f ""
+["pdflatex"] 1747084571.58209 "/Users/eric/Documents/classes/4782/prefix-tuning/report/report.tex" "report.pdf" "report" 1747084572.94639 0
+  "/Users/eric/Documents/classes/4782/prefix-tuning/report/report.tex" 1747084571.24112 7190 e68c8c8d37aca282825b3334d6d0ab85 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -207,11 +207,11 @@
   "header_stuff.tex" 1746981161.70519 4442 95c3dfb21eaea71fa5c256da5f49d544 ""
   "image.png" 1746996268.31678 87664 2585b6e480b6278f962585f0ff188efc ""
   "prefix-architecture.png" 1747055378.24426 450271 cfa90c8250ce2904947d83fbc0803a65 ""
-  "report.aux" 1747056168.70613 2744 c4595e9834ec90df6e08f9727842d287 "pdflatex"
+  "report.aux" 1747084572.64677 2744 c4595e9834ec90df6e08f9727842d287 "pdflatex"
   "report.bbl" 1747056111.99052 1489 cf16041dc4a148ef4146f68179acb458 "bibtex report"
-  "report.brf" 1747056168.70736 301 38643942d0aded875d82941887f3ace0 "pdflatex"
-  "report.out" 1747056168.70708 931 7397c132689214cfb98a169a3ccc7f02 "pdflatex"
-  "report.tex" 1747056167.41508 7136 137d9d7e573d7c651a6da6d8cbc3d19f ""
+  "report.brf" 1747084572.64748 301 38643942d0aded875d82941887f3ace0 "pdflatex"
+  "report.out" 1747084572.64737 931 7397c132689214cfb98a169a3ccc7f02 "pdflatex"
+  "report.tex" 1747084571.24112 7190 e68c8c8d37aca282825b3334d6d0ab85 ""
   (generated)
   "report.aux"
   "report.brf"

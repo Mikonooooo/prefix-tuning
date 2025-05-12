@@ -44,7 +44,19 @@ To use the E2E evaluation scripts, you must have Java 1.8 or higher and Perl 5.8
 
 **Then run the following commands to do X, Y, Z...**
 
+First, before training the model, set the hyperparameters you want to train with in `src/configs/hyperparameters.yaml` train the model. To choose between prefix-tuning and full fine-tuning, set the hyperparameter `tuner` to `"prefix"` or `"fine"`.
 
+Then, you can train the model. (And create a models folder if there's an error about that)
+```
+python src/train.py
+```
+
+Then, run the model on the E2E dataset to generate an output file using
+```
+python src/output_gen.py
+```
+
+Finally, to run the evaluation metrics on the generated output, run
 ```
 ./e2e-metrics/measure_scores.py src/target.txt src/model-output.txt 
 ```

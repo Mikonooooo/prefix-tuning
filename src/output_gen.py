@@ -3,6 +3,8 @@ from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from data_load import get_dict_from_data
 import torch
 from tqdm import tqdm
+from pathlib import Path
+import yaml
 
 device = "cuda" 
 
@@ -67,25 +69,33 @@ def write_output_file(input_path, model, tokenizer, generated_path):
 
 if __name__ == "__main__":
     device = "cuda" 
-    run_name = "paper-medium-ft_fine"
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
     tokenizer.pad_token = tokenizer.eos_token
     input_filepath = "data/e2e_data/src1_test.txt"
 
-    # Load prefix-tuned model
-    # model = GPT2LMHeadModel.from_pretrained("gpt2-medium").to(device)
-    # prefix_model = PrefixTuning(model, prefix_len=5, k=800)
-    # prefix_model.init_P_weights(
-    #     f"models/{run_name}_prime.pth",
-    #     f"models/{run_name}_mlp.pth"
-    # )
-    # gen_filepath = f"evals/{run_name}.txt"
-    # write_output_file(
-    #     input_filepath, prefix_model, tokenizer, gen_filepath)
+    hyperparameter_file = Path(__file__).parent / \
+        "configs" / "hyperparameters.yaml"
+    with open(hyperparameter_file, "r") as f:
+        args = yaml.safe_load(f)
 
-    ## Load finetuned model
-    model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
-    model.load_state_dict(torch.load(
-        f"models/{run_name}.pth", map_location="cuda"))  # or "cuda"
-    gen_filepath = f"evals/{run_name}.txt"
-    write_output_file(input_filepath, model, tokenizer, gen_filepath)
+    run_name = args["run_name"]
+
+
+    if args["tuner"] == "prefix":
+        # Load prefix-tuned model
+        model = GPT2LMHeadModel.from_pretrained("gpt2-medium").to(device)
+        prefix_model = PrefixTuning(model, prefix_len=args['prefix_len'], k=800)
+        prefix_model.init_P_weights(
+            f"models/{run_name}_prime.pth",
+            f"models/{run_name}_mlp.pth"
+        )
+        gen_filepath = f"evals/{run_name}.txt"
+        write_output_file(
+            input_filepath, prefix_model, tokenizer, gen_filepath)
+    else:
+        ## Load finetuned model
+        model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
+        model.load_state_dict(torch.load(
+            f"models/{run_name}.pth", map_location="cuda"))  # or "cuda"
+        gen_filepath = f"evals/{run_name}.txt"
+        write_output_file(input_filepath, model, tokenizer, gen_filepath)
