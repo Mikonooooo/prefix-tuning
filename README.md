@@ -32,6 +32,7 @@ We re-implement prefix-tuning and fine-tuning for GPT-2 Medium on the E2E NLG da
     ├── train.py # training loop
     └── train_small.py
 ```
+We deviate from the specified structure with the `src` folder instead of `code` and `evals` instead of `results`. Tables are produced by running the E2E evaluation script.
 
 ## Re-implementation Details
 We import pretrained GPT-2 models from HuggingFace and wrap them via PyTorch. We follow the same training procedure as [1] with 5 epochs, prefix length 5, batch size 10, learning rate 8e-5 (and 5e-5 for fine tuning), linear learning schedule, and beam search with length 5. We evalute GPT-2 Small and Medium on the E2E NLG dataset using the official metrics scripts, so we have BLEU, NIST, METEOR, ROUGE-L and CIDEr. See figure below and [1] for more details.
@@ -61,11 +62,15 @@ Finally, to run the evaluation metrics on the generated output, run
 ./e2e-metrics/measure_scores.py src/target.txt src/model-output.txt 
 ```
 
+We trained on a single GPU with 16GB of VRAM.
+
 ## Results
 The results are that fine-tuning and prefix-tuning are comparable, so our prefix-tuning is slightly worse than that is found by [1]. Further, as prefix-length increases, so does the BLEU score for table-to-text generation.
 
 ![photo of results](./report/table1_for_README.png)
 ![photo of ablations](./report/image.png)
+
+The original paper found fine-tuning to take about 1.5 times as long as prefix-tuning to train. This ratio was around 1.8 for us.
 
 ## Conclusion
 We were able to get comparable performance with prefix-tuning to fine-tuning, and it trained faster. We learned to iterate early and often. Don't get caught up trying to figure out what's 100% right.
