@@ -2,10 +2,10 @@
 Mac Turner, Michael Ngo, Eric Hu, Neeraj Parihar
 
 ## Introduction
-This repo is a re-implementation of Prefix-Tuning: Optimizing continuous prompts for generation by Xiang Lisa Li and Percy Liang [[1]]. This paper introduces a finetuning method that requires only tuning only 0.1\% of the parameters for comparable if not better performance than full finetuning.
+This repo is a re-implementation of Prefix-Tuning: Optimizing continuous prompts for generation by Xiang Lisa Li and Percy Liang [1]. This paper introduces a finetuning method that requires only tuning only 0.1\% of the parameters for comparable if not better performance than full finetuning.
 
 ## Chosen Result
-We re-implement prefix-tuning and fine-tuning for GPT-2 Medium on the E2E NLG dataset [[2]] and show that prefix-tuning achieve comparable performance with full fine-tuning while being faster to train and memory efficient to store. This is the upper-left quadrant of Table 1 in [1]. We also perform an ablation study on prefix length. This is Figure 4 in [1].
+We re-implement prefix-tuning and fine-tuning for GPT-2 Medium on the E2E NLG dataset [2] and show that prefix-tuning achieve comparable performance with full fine-tuning while being faster to train and memory efficient to store. This is the upper-left quadrant of Table 1 in [1]. We also perform an ablation study on prefix length. This is Figure 4 in [1].
 
 ## Repo Structure
 ```bash
