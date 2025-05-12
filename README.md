@@ -43,8 +43,6 @@ Install the conda environment from `environment.yaml`
 
 To use the E2E evaluation scripts, you must have Java 1.8 or higher and Perl 5.8.8 or higher with the [XML::Twig](http://search.cpan.org/~mirod/XML-Twig-3.49/Twig.pm) CPAN module.
 
-**Then run the following commands to do X, Y, Z...**
-
 First, before training the model, set the hyperparameters you want to train with in `src/configs/hyperparameters.yaml` train the model. To choose between prefix-tuning and full fine-tuning, set the hyperparameter `tuner` to `"prefix"` or `"fine"`.
 
 Then, you can train the model. (And create a models folder if there's an error about that)
