@@ -12,7 +12,7 @@ We re-implement prefix-tuning and fine-tuning for GPT-2 Medium on the E2E NLG da
 .
 ├── data
 │   └── e2e_data
-├── e2e-metrics
+├── e2e-metrics # imported submodule from official eval scripts
 │   └── measure_scores.py
 ├── environment.yaml
 ├── evals # stores model outputs
