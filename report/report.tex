@@ -16,8 +16,10 @@
 
 \begin{document}
 \maketitle
-\vspace{-2em}
-\hfil\href{https://github.com/Mikonooooo/prefix-tuning}{github.com/prefix-tuning}
+\begin{center}
+    \vspace{-2em}
+    \href{https://github.com/Mikonooooo/prefix-tuning}{github.com/Mikonooooo/prefix-tuning}
+\end{center}
 
 \section{Introduction}
 Finetuning LLMs for specific tasks requires training a new set of weights for every task, which is expressive but expensive. On the other hand, prompt engineering does not require any training, which is cheap but limiting. \textit{Prefix-Tuning: Optimizing Continuous Prompts for Generation} by Xiang Lisa Li and Percy Liang~\cite{li-liang-2021-prefix} introduces a method of fine-tuning that combines the efficiency of prompt engineering and the effectiveness of full fine tuning.
@@ -39,7 +41,7 @@ We chose to reproduce prefix-tuning for GPT-2 Medium on table-to-text generation
 \section{Methodology}
 
 \subsection{Prefix-Tuning Architecture}
-See Figure~\ref{fig:prefix_tuning}. The base model we freeze is GPT-2 Medium. The model is a stack of attention blocks with hidden size $768$. For each attention block $i$, Prefix-Tuning learns $L$ keys and values to attended over during generation. These $L$ keys and values are learned via a network, $\textsf{MLP}_{\theta,i}$ and input matrix $P_{\theta,i}$. This is done for training stability. $P_{\theta,i}$ is of dimension $L\times 768$. The MLP is 2 layers, specifically a linear layer from $768$ to $800$, followed by a $\textsf{tanh}$ activation, and a linear layer from $800$ to the embedding dimension of $2\cdot 784$. Note there is multiplicationby $2$ because for each activation, we need a key and value.
+See Figure~\ref{fig:prefix_tuning}. The base model we freeze is GPT-2 Medium. The model is a stack of attention blocks with hidden size $768$. For each attention block $i$, Prefix-Tuning learns $L$ keys and values to attended over during generation. These $L$ keys and values are learned via a network, $\textsf{MLP}_{\theta,i}$ and input matrix $P_{\theta,i}$. This is done for training stability. $P_{\theta,i}$ is of dimension $L\times 768$. The MLP is 2 layers, specifically a linear layer from $768$ to $800$, followed by a $\textsf{tanh}$ activation, and a linear layer from $800$ to the embedding dimension of $2\cdot 784$. Note there is multiplication by $2$ because for each activation, we need a key and value.
 \begin{figure}
     \centering
     \includegraphics[width=0.75\linewidth]{prefix-architecture.png}
@@ -79,7 +81,7 @@ Following the paper, prefix-tuning is trained over the E2E dataset, with \texttt
     \label{pref_len}
 \end{figure}
 
-See results in Table~\ref{tab:results}. We observe that our results are slightly worse than the paper's reported scores. However, the general trends we observed are the same: prefix-tuning has comparable performance to fine-tuning GPT-2, while optimizing much less (0.1\%) parameters. We also performed an ablation on the prefix length, shown in Figure~\ref{pref_len}, where we found that performance stagnates with prefixes with length $>5$. This is consistent with the authors' choice to use prefixes of length 5 for this task.
+See results in Table~\ref{tab:results}. We observe that our results are very slightly worse than the paper's reported scores. However, the general trends we observed are the same: prefix-tuning has comparable performance to fine-tuning GPT-2, while optimizing much less (0.1\%) parameters. We also read through the model outputs, and could not discern between prefix-tuned and fine-tuned GPT-2, as their outputs were both reasonable. We also performed an ablation on the prefix length, shown in Figure~\ref{pref_len}, where we found that performance stagnates with prefixes with length $>5$. This is consistent with the authors' choice to use prefixes of length 5 for this task. Finally, we benchmarked the time taken for each type of tuning. The paper reported a ratio of \texttt{time to fine-tune / time to prefix-tune} of $\approx$ 1.5, and our calculated ratio of $\approx$ 1.8. 
 
 We faced a lot of challenges during implementation. Using the HuggingFace transformer's \texttt{generate} function produced results that omitted table information. After a lot of debugging, we decided to implement it ourselves, which includes implementing beam search from scratch. We also spent a good chunk of time figuring out how to properly pass in prefix information to the HuggingFace model.
 
